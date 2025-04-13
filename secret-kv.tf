@@ -3,7 +3,7 @@ locals {
 }
 
 resource "vault_mount" "mount_kv" {
-  path = "kvv1"
+  path = var.path-secret-kv
   type = "kv"
   options = {
     version = "1"
