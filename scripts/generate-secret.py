@@ -6,7 +6,7 @@ import string
 import sys
 
 
-def generate_password(length=16, symbols=True):
+def generate_secret(length=16, symbols=True):
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += "!@#$%^&*-_=+;:,./?"
@@ -15,10 +15,10 @@ def generate_password(length=16, symbols=True):
 
 def main():
     input_data = json.load(sys.stdin)
-    length = input_data.get("length", 16)
-    symbols = input_data.get("symbols", True)
+    length = int(input_data.get("length", 16))
+    symbols = str(input_data.get("symbols", "true")) == "true"
 
-    result = {"password": generate_password(length, symbols)}
+    result = {"secret": generate_secret(length, symbols)}
 
     print(json.dumps(result))
 
