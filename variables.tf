@@ -5,6 +5,11 @@ variable "repo-path-policy" {
   default = "config/policies"
 }
 
+variable "repo-path-secret-kv" {
+  type    = string
+  default = "config/secrets/kv"
+}
+
 # REPO PATHS
 
 variable "vault-path-secret-kv" {
