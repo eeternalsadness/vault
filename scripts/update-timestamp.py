@@ -15,7 +15,7 @@ if "metadata" not in data:
     data["metadata"] = {}
 
 # Update timestamp in RFC3339 (Terraform-compatible)
-now_utc = datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat() + "Z"
+now_utc = datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat()
 data["metadata"]["timestamp"] = now_utc
 
 # Write back to file

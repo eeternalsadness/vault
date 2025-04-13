@@ -4,8 +4,13 @@ locals {
     trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s", var.repo-path-secret-kv, file_name)))
   }
 
+  secret-kv-rotation-map = {
+    for k, v in local.secret-kv-map : k => v
+    if try(v.metadata.timestamp, null) == null || timecmp(timeadd(v.metadata.timestamp, v.spec.interval), plantimestamp()) <= 0
+  }
+
   secret-kv-fixed = {
-    for k, v in local.secret-kv-map : k => v.spec.fixed
+    for k, v in local.secret-kv-rotation-map : k => v.spec.fixed
   }
 
   secret-kv-generated-keys = merge([
@@ -15,7 +20,7 @@ locals {
   ]...)
 
   secret-kv-generated = {
-    for k, v in local.secret-kv-map : k => merge([
+    for k, v in local.secret-kv-rotation-map : k => merge([
       for secret in v.spec.generated : { "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret }
     ]...)
   }
@@ -38,7 +43,14 @@ resource "vault_kv_secret" "secret_kv" {
   for_each = local.secret-kv-map
 
   path      = format("%s/%s", vault_mount.mount_kv.path, each.value.metadata.path)
-  data_json = jsonencode(local.secret-kv-secrets[each.key])
+  data_json = contains(keys(local.secret-kv-rotation-map), each.key) ? jsonencode(local.secret-kv-secrets[each.key]) : data.vault_kv_secret.secret_kv_data[each.key].data_json
+}
+
+# FIXME: this is bad as vault secrets get stored in state & can be displayed in output
+data "vault_kv_secret" "secret_kv_data" {
+  for_each = { for k, v in local.secret-kv-map : k => v if !contains(keys(local.secret-kv-rotation-map), k) }
+
+  path = format("%s/%s", vault_mount.mount_kv.path, each.value.metadata.path)
 }
 
 data "external" "generate-secret-kv" {
