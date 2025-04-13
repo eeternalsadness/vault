@@ -1,0 +1,3 @@
+path "test/*" {
+  capabilities = ["read"]
+}
