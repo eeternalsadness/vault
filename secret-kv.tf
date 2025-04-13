@@ -1,9 +1,9 @@
 locals {
-
+  secret-kv-files = { for file_name in fileset()}
 }
 
 resource "vault_mount" "mount_kv" {
-  path = var.path-secret-kv
+  path = var.vault-path-secret-kv
   type = "kv"
   options = {
     version = "1"

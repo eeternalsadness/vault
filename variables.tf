@@ -1,9 +1,13 @@
-variable "path-policy" {
+# REPO PATHS
+
+variable "repo-path-policy" {
   type    = string
   default = "config/policies"
 }
 
-variable "path-secret-kv" {
+# REPO PATHS
+
+variable "vault-path-secret-kv" {
   type    = string
   default = "kvv1"
 }
