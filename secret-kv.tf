@@ -5,18 +5,18 @@ locals {
   }
 
   secret-kv-fixed = {
-    for k, v in local.secret-kv-map : k => v.data.fixed
+    for k, v in local.secret-kv-map : k => v.spec.fixed
   }
 
   secret-kv-generated-keys = merge([
     for k, v in local.secret-kv-map : {
-      for secret in v.data.generated : "${k}/${secret}" => secret
+      for secret in v.spec.generated : "${k}/${secret}" => secret
     }
   ]...)
 
   secret-kv-generated = {
     for k, v in local.secret-kv-map : k => merge([
-      for secret in v.data.generated : { "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret }
+      for secret in v.spec.generated : { "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret }
     ]...)
   }
 
