@@ -8,7 +8,8 @@ locals {
   # map name => yaml content for each kv secret file
   # IF there's no timestamp OR modify timestamp + rotation interval < current timestamp
   secret-kv-rotation-map = {
-    for k, v in local.secret-kv-map : k => v
+    for k, v in local.secret-kv-map :
+    k => v
     if try(v.metadata.timestamp, null) == null || timecmp(timeadd(v.metadata.timestamp, v.spec.interval), plantimestamp()) <= 0
   }
 
@@ -27,7 +28,10 @@ locals {
   # map of secrets that need to be generated with their generated values
   secret-kv-generated = {
     for k, v in local.secret-kv-rotation-map : k => merge([
-      for secret in v.spec.generated : { "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret }
+      for secret in v.spec.generated :
+      {
+        "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret
+      }
     ]...)
   }
 
