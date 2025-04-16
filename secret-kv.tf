@@ -1,8 +1,8 @@
 locals {
   # map name => yaml content for each kv secret file
   secret-kv-map = {
-    for file_name in fileset(var.repo-path-secret-kv, "*.yaml") :
-    trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s", var.repo-path-secret-kv, file_name)))
+    for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
+    trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name)))
   }
 
   # map name => yaml content for each kv secret file
@@ -74,12 +74,15 @@ data "external" "generate-secret-kv" {
 
 # update timestamp in yaml file after a secret is created/updated for rotation purposes
 resource "null_resource" "update_timestamp" {
-  for_each = { for file_name in fileset(var.repo-path-secret-kv, "*.yaml") : trimsuffix(file_name, ".yaml") => file_name }
+  for_each = {
+    for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
+    trimsuffix(file_name, ".yaml") => file_name
+  }
 
   provisioner "local-exec" {
     command = "python3 scripts/update-timestamp.py $file_path"
     environment = {
-      file_path = format("%s/%s", var.repo-path-secret-kv, each.value)
+      file_path = format("%s/%s/%s", path.module, var.repo-path-secret-kv, each.value)
     }
   }
 
