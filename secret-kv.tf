@@ -10,7 +10,13 @@ locals {
   secret-kv-rotation-map = {
     for k, v in local.secret-kv-map :
     k => v
-    if try(v.metadata.timestamp, null) == null || timecmp(timeadd(v.metadata.timestamp, v.spec.interval), plantimestamp()) <= 0
+    if timecmp(
+      timeadd(
+        contains(keys(v.metadata), "timestamp") ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
+        v.spec.interval
+      ),
+      plantimestamp()
+    ) <= 0
   }
 
   # map of fixed secrets (don't need to be generated)
