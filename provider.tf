@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "vault" {
-  max_lease_ttl_seconds = 300
+  max_lease_ttl_seconds = 43200
 }
 
 provider "external" {}
