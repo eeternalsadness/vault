@@ -34,9 +34,13 @@ resource "vault_jwt_auth_backend_role" "oidc" {
   role_name      = "terraform-vault"
   token_policies = ["default", "terraform-vault"]
 
-  user_claim  = "email"
   role_type   = "oidc"
   oidc_scopes = ["openid", "email"]
+  user_claim  = "email"
+  bound_claims = {
+    email = "69bnguyen@gmail.com"
+  }
+
   # FIXME: update once ingress is configured
   allowed_redirect_uris = [
     "http://localhost:8250/oidc/callback",
