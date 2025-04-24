@@ -43,6 +43,7 @@ resource "vault_jwt_auth_backend_role" "oidc" {
     "http://localhost:54288/ui/vault/auth/oidc/oidc/callback"
   ]
 
-  token_explicit_max_ttl = 300
-  token_ttl              = 300
+  # NOTE: limit to 5 min since this token is VERY PERMISSIVE
+  token_explicit_max_ttl = 300 # 5 min
+  token_ttl              = 300 # 5 min
 }
