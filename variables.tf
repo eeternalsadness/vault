@@ -10,7 +10,12 @@ variable "repo-path-secret-kv" {
   default = "config/secrets/kv"
 }
 
-# REPO PATHS
+variable "repo-path-auth-jwt" {
+  type    = string
+  default = "config/auth/jwt"
+}
+
+# VAULT PATHS
 
 variable "vault-path-secret-kv" {
   type    = string

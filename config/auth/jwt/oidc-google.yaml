@@ -1,5 +1,6 @@
 metadata:
   name: google
+  description: "Google OIDC backend"
 spec:
   # path to oidc secrets in vault
   secretPath: oidc/google
@@ -8,9 +9,6 @@ spec:
   type: oidc
   oidc:
     discoveryUrl: "https://accounts.google.com"
-    redirectUrls:
-      - "http://localhost:8250/oidc/callback"
-      - "http://localhost:54288/ui/vault/auth/oidc/oidc/callback"
     roleMappings:
       - roleName: terraform-vault
         tokenPolicies:
@@ -19,7 +17,10 @@ spec:
         scopes:
           - openid
           - email
-        userClaims: "email"
+        userClaim: "email"
         boundClaims:
           email: "69bnguyen@gmail.com"
+        redirectUrls:
+          - "http://localhost:8250/oidc/callback"
+          - "http://localhost:54288/ui/vault/auth/oidc/oidc/callback"
         tokenTtlSeconds: 300 # 5 min
