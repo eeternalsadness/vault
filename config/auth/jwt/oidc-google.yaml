@@ -24,3 +24,17 @@ spec:
           - "http://localhost:8250/oidc/callback"
           - "http://localhost:54288/ui/vault/auth/oidc/oidc/callback"
         tokenTtlSeconds: 300 # 5 min
+      - roleName: terraform-grafana
+        tokenPolicies:
+          - default
+          - terraform-grafana
+        scopes:
+          - openid
+          - email
+        userClaim: "email"
+        boundClaims:
+          email: "69bnguyen@gmail.com"
+        redirectUrls:
+          - "http://localhost:8250/oidc/callback"
+          - "http://localhost:54288/ui/vault/auth/oidc/oidc/callback"
+        tokenTtlSeconds: 14400 # 4 hours
