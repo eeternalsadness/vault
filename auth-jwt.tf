@@ -9,8 +9,9 @@ locals {
     for k, v in local.auth-jwt-map : {
       for role in v.spec.oidc.roleMappings :
       format("%s/%s", k, role.roleName) => {
-        backend_name = v.metadata.name
-        role_map     = role
+        backend_name  = v.metadata.name
+        redirect_urls = v.spec.oidc.redirectUrls
+        role_map      = role
       }
     }
     if v.spec.type == "oidc"
@@ -27,7 +28,7 @@ resource "vault_jwt_auth_backend" "jwt" {
   for_each = local.auth-jwt-map
 
   description        = each.value.metadata.description
-  oidc_discovery_url = each.value.spec.discoveryUrl
+  oidc_discovery_url = each.value.spec.oidc.discoveryUrl
   oidc_client_id     = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret.jwt[each.key].data_json).client_id : null
   oidc_client_secret = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret.jwt[each.key].data_json).client_secret : null
   path               = each.value.spec.mountPath
@@ -46,7 +47,7 @@ resource "vault_jwt_auth_backend_role" "oidc" {
   user_claim   = each.value.role_map.userClaim
   bound_claims = each.value.role_map.boundClaims
 
-  allowed_redirect_uris = each.value.role_map.redirectUrls
+  allowed_redirect_uris = each.value.redirect_urls
 
   token_explicit_max_ttl = each.value.role_map.tokenTtlSeconds
   token_ttl              = each.value.role_map.tokenTtlSeconds
