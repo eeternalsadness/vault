@@ -5,12 +5,20 @@ locals {
     trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name)))
   }
 
+  secret-kv-import = {
+    for k, v in local.secret-kv-map :
+    k => {
+      path = format("%s/%s", vault_mount.mount_kv.path, v.metadata.path)
+    }
+    if try(v.spec.import, false)
+  }
+
   # map name => yaml content for each kv secret file
   # IF there's no timestamp OR modify timestamp + rotation interval < current timestamp
   secret-kv-rotation-map = {
     for k, v in local.secret-kv-map :
     k => v
-    if timecmp(
+    if try(!v.spec.import, true) && timecmp(
       timeadd(
         contains(keys(v.metadata), "timestamp") ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
         v.spec.interval
@@ -66,7 +74,6 @@ resource "vault_kv_secret" "secret_kv" {
   data_json = contains(keys(local.secret-kv-rotation-map), each.key) ? jsonencode(local.secret-kv-secrets[each.key]) : data.vault_kv_secret.secret_kv_data[each.key].data_json
 }
 
-# FIXME: this is bad as vault secrets get stored in state & can be displayed in output
 data "vault_kv_secret" "secret_kv_data" {
   for_each = { for k, v in local.secret-kv-map : k => v if !contains(keys(local.secret-kv-rotation-map), k) }
 
@@ -103,4 +110,11 @@ resource "null_resource" "update_timestamp" {
   }
 
   depends_on = [vault_kv_secret.secret_kv]
+}
+
+import {
+  for_each = local.secret-kv-import
+
+  id = each.value.path
+  to = vault_kv_secret.secret_kv[each.key]
 }
