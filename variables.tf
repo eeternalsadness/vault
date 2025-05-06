@@ -21,3 +21,8 @@ variable "vault-path-secret-kv" {
   type    = string
   default = "kvv1"
 }
+
+variable "vault-path-secret-kv-v2" {
+  type    = string
+  default = "kvv2"
+}
