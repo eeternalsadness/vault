@@ -47,7 +47,7 @@ locals {
     for k, v in local.secret-kvv2-rotation-map : k => merge([
       for secret in v.spec.generated :
       {
-        secret = data.external.generate-secret-kv["${k}/${secret}"].result.secret
+        secret = data.external.generate-secret-kvv2["${k}/${secret}"].result.secret
       }
     ]...)
     if contains(keys(v.spec), "generated")
@@ -79,8 +79,14 @@ resource "vault_kv_secret_v2" "kvv2" {
 
   mount = vault_mount.kvv2.path
   name  = each.value.metadata.path
+  # WARN: delete all versions of secret if the config is deleted
+  delete_all_versions = true
   # only update for secrets that need to be rotated, otherwise use current value
   data_json = contains(keys(local.secret-kvv2-rotation-map), each.key) ? jsonencode(local.secret-kvv2-secrets[each.key]) : data.vault_kv_secret_v2.kvv2[each.key].data_json
+  custom_metadata {
+    max_versions         = try(each.value.spec.maxVersions, null)
+    delete_version_after = try(each.value.spec.deleteVersionAfterSeconds, null)
+  }
 }
 
 data "vault_kv_secret_v2" "kvv2" {
@@ -88,6 +94,17 @@ data "vault_kv_secret_v2" "kvv2" {
 
   mount = vault_mount.kvv2.path
   name  = each.value.metadata.path
+}
+
+# generate secrets for secrets that need to be rotated
+data "external" "generate-secret-kvv2" {
+  for_each = local.secret-kvv2-generated-keys
+
+  program = ["python3", "scripts/generate-secret.py"]
+  query = {
+    length  = var.kv-generated-secret-length
+    symbols = var.kv-generated-secret-use-symbols
+  }
 }
 
 # update timestamp in yaml file after a secret is created/updated for rotation purposes
