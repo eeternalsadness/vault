@@ -14,14 +14,14 @@ locals {
   }
 
   # map name => yaml content for each kv secret file
-  # IF rotate_interval is set AND (there's no timestamp OR modify timestamp + rotation interval < current timestamp)
+  # IF rotateInterval is set AND (there's no timestamp OR modify timestamp + rotateInterval < current timestamp)
   secret-kv-rotation-map = {
     for k, v in local.secret-kv-map :
     k => v
-    if contains(keys(v.spec), "interval") && timecmp(
+    if contains(keys(v.spec), "rotateInterval") && timecmp(
       timeadd(
         contains(keys(v.metadata), "timestamp") ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
-        try(v.spec.interval, "0s")
+        try(v.spec.rotateInterval, "0s")
       ),
       plantimestamp()
     ) <= 0
