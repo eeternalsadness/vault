@@ -43,5 +43,5 @@ variable "kvv2-max-versions" {
 variable "kvv2-delete-version-after-seconds" {
   description = "Number of seconds a kvv2 secret version should be retained for before getting deleted"
   type        = number
-  default     = 0
+  default     = null
 }

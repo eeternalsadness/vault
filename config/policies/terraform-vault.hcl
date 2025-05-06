@@ -50,11 +50,6 @@ path "sys/mounts" {
 # KV
 #####################################
 
-# kv secret backend
-path "kvv1/config" {
-  capabilities = ["create", "update", "delete", "read"]
-}
-
 # kv secrets
 path "kvv1/*" {
   capabilities = ["create", "update", "delete", "read"]
@@ -64,12 +59,7 @@ path "kvv1/*" {
 # KVV2
 #####################################
 
-# kvv2 secret backend
-path "kvv2/config" {
-  capabilities = ["create", "update", "delete", "read"]
-}
-
 # kvv2 secrets
-path "kvv2/data/*" {
+path "kvv2/*" {
   capabilities = ["create", "update", "delete", "read"]
 }
