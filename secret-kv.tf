@@ -27,9 +27,9 @@ locals {
     ) <= 0
   }
 
-  # map of fixed secrets (don't need to be generated)
-  secret-kv-fixed = {
-    for k, v in local.secret-kv-rotation-map : k => v.spec.fixed if contains(keys(v.spec), "fixed")
+  # map of public secrets (don't need to be generated)
+  secret-kv-public = {
+    for k, v in local.secret-kv-rotation-map : k => v.spec.public if contains(keys(v.spec), "public")
   }
 
   # map of secret keys that need to be generated
@@ -45,15 +45,15 @@ locals {
     for k, v in local.secret-kv-rotation-map : k => merge([
       for secret in v.spec.generated :
       {
-        "${secret}" = data.external.generate-secret-kv["${k}/${secret}"].result.secret
+        secret = data.external.generate-secret-kv["${k}/${secret}"].result.secret
       }
     ]...)
     if contains(keys(v.spec), "generated")
   }
 
-  # combined map of fixed and generated secrets
+  # combined map of public and generated secrets
   secret-kv-secrets = {
-    for key in keys(local.secret-kv-fixed) : key => merge(local.secret-kv-fixed[key], local.secret-kv-generated[key])
+    for key in keys(local.secret-kv-public) : key => merge(local.secret-kv-public[key], local.secret-kv-generated[key])
   }
 }
 
