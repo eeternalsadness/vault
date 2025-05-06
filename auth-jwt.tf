@@ -18,10 +18,11 @@ locals {
   ]...)
 }
 
-data "vault_kv_secret" "jwt" {
+data "vault_kv_secret_v2" "jwt" {
   for_each = local.auth-jwt-map
 
-  path = format("%s/%s", vault_mount.kv.path, each.value.spec.secretPath)
+  mount = vault_mount.kvv2.path
+  name  = each.value.spec.secretPath
 }
 
 resource "vault_jwt_auth_backend" "jwt" {
@@ -29,8 +30,8 @@ resource "vault_jwt_auth_backend" "jwt" {
 
   description        = each.value.metadata.description
   oidc_discovery_url = each.value.spec.oidc.discoveryUrl
-  oidc_client_id     = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret.jwt[each.key].data_json).client_id : null
-  oidc_client_secret = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret.jwt[each.key].data_json).client_secret : null
+  oidc_client_id     = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_id : null
+  oidc_client_secret = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_secret : null
   path               = each.value.spec.mountPath
   type               = each.value.spec.type
 }
