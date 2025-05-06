@@ -21,7 +21,7 @@ locals {
 data "vault_kv_secret" "jwt" {
   for_each = local.auth-jwt-map
 
-  path = format("%s/%s", vault_mount.mount_kv.path, each.value.spec.secretPath)
+  path = format("%s/%s", vault_mount.kv.path, each.value.spec.secretPath)
 }
 
 resource "vault_jwt_auth_backend" "jwt" {

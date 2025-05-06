@@ -8,7 +8,7 @@ locals {
   secret-kv-import = {
     for k, v in local.secret-kv-map :
     k => {
-      path = format("%s/%s", vault_mount.mount_kv.path, v.metadata.path)
+      path = format("%s/%s", vault_mount.kv.path, v.metadata.path)
     }
     if try(v.spec.import, false)
   }
@@ -57,7 +57,7 @@ locals {
   }
 }
 
-resource "vault_mount" "mount_kv" {
+resource "vault_mount" "kv" {
   path = var.vault-path-secret-kv
   type = "kv"
   options = {
@@ -66,18 +66,18 @@ resource "vault_mount" "mount_kv" {
   description = "KV version 1 secret engine mount"
 }
 
-resource "vault_kv_secret" "secret_kv" {
+resource "vault_kv_secret" "kv" {
   for_each = local.secret-kv-map
 
-  path = format("%s/%s", vault_mount.mount_kv.path, each.value.metadata.path)
+  path = format("%s/%s", vault_mount.kv.path, each.value.metadata.path)
   # only update for secrets that need to be rotated, otherwise use current value
-  data_json = contains(keys(local.secret-kv-rotation-map), each.key) ? jsonencode(local.secret-kv-secrets[each.key]) : data.vault_kv_secret.secret_kv_data[each.key].data_json
+  data_json = contains(keys(local.secret-kv-rotation-map), each.key) ? jsonencode(local.secret-kv-secrets[each.key]) : data.vault_kv_secret.kv[each.key].data_json
 }
 
-data "vault_kv_secret" "secret_kv_data" {
+data "vault_kv_secret" "kv" {
   for_each = { for k, v in local.secret-kv-map : k => v if !contains(keys(local.secret-kv-rotation-map), k) }
 
-  path = format("%s/%s", vault_mount.mount_kv.path, each.value.metadata.path)
+  path = format("%s/%s", vault_mount.kv.path, each.value.metadata.path)
 }
 
 # generate secrets for secrets that need to be rotated
@@ -106,15 +106,15 @@ resource "null_resource" "update_timestamp" {
   }
 
   triggers = {
-    secret_updated = vault_kv_secret.secret_kv[each.key].data_json
+    secret_updated = vault_kv_secret.kv[each.key].data_json
   }
 
-  depends_on = [vault_kv_secret.secret_kv]
+  depends_on = [vault_kv_secret.kv]
 }
 
 import {
   for_each = local.secret-kv-import
 
   id = each.value.path
-  to = vault_kv_secret.secret_kv[each.key]
+  to = vault_kv_secret.kv[each.key]
 }
