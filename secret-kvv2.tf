@@ -65,7 +65,9 @@ resource "vault_mount" "kvv2" {
   options = {
     version = "2"
   }
-  description = "KV version 2 secret engine mount"
+  description               = "KV version 2 secret engine mount"
+  default_lease_ttl_seconds = var.kvv2-lease-ttl-seconds
+  max_lease_ttl_seconds     = var.kvv2-lease-ttl-seconds
 }
 
 resource "vault_kv_secret_backend_v2" "kvv2" {

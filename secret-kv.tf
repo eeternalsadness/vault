@@ -64,7 +64,9 @@ resource "vault_mount" "kv" {
   options = {
     version = "1"
   }
-  description = "KV version 1 secret engine mount"
+  description               = "KV version 1 secret engine mount"
+  default_lease_ttl_seconds = var.kv-lease-ttl-seconds
+  max_lease_ttl_seconds     = var.kv-lease-ttl-seconds
 }
 
 resource "vault_kv_secret" "kv" {

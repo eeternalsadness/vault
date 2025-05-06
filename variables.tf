@@ -46,6 +46,18 @@ variable "kv-generated-secret-use-symbols" {
   default     = true
 }
 
+variable "kv-lease-ttl-seconds" {
+  description = "Number of seconds that a kv secret is valid for, after which it needs to be fetched again"
+  type        = number
+  default     = 600 # 5 minutes
+}
+
+variable "kvv2-lease-ttl-seconds" {
+  description = "Number of seconds that a kvv2 secret is valid for, after which it needs to be fetched again"
+  type        = number
+  default     = 600 # 5 minutes
+}
+
 variable "kvv2-max-versions" {
   description = "Max number of versions a kvv2 secret can have"
   type        = number
