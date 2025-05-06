@@ -18,10 +18,10 @@ locals {
   secret-kv-rotation-map = {
     for k, v in local.secret-kv-map :
     k => v
-    if try(!v.spec.import, true) && timecmp(
+    if contains(keys(v.spec), "interval") && timecmp(
       timeadd(
         contains(keys(v.metadata), "timestamp") ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
-        v.spec.interval
+        try(v.spec.interval, "0s")
       ),
       plantimestamp()
     ) <= 0
