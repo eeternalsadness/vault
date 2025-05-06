@@ -44,9 +44,9 @@ locals {
   # map of secrets that need to be generated with their generated values
   secret-kv-generated = {
     for k, v in local.secret-kv-rotation-map : k => merge([
-      for secret in v.spec.generated :
       {
-        secret = data.external.generate-secret-kv["${k}/${secret}"].result.secret
+        for secret in v.spec.generated :
+        secret => data.external.generate-secret-kv["${k}/${secret}"].result.secret
       }
     ]...)
     if contains(keys(v.spec), "generated")

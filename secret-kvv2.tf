@@ -45,9 +45,9 @@ locals {
   # map of secrets that need to be generated with their generated values
   secret-kvv2-generated = {
     for k, v in local.secret-kvv2-rotation-map : k => merge([
-      for secret in v.spec.generated :
       {
-        secret = data.external.generate-secret-kvv2["${k}/${secret}"].result.secret
+        for secret in v.spec.generated :
+        secret => data.external.generate-secret-kvv2["${k}/${secret}"].result.secret
       }
     ]...)
     if contains(keys(v.spec), "generated")
@@ -83,9 +83,16 @@ resource "vault_kv_secret_v2" "kvv2" {
   delete_all_versions = true
   # only update for secrets that need to be rotated, otherwise use current value
   data_json = contains(keys(local.secret-kvv2-rotation-map), each.key) ? jsonencode(local.secret-kvv2-secrets[each.key]) : data.vault_kv_secret_v2.kvv2[each.key].data_json
-  custom_metadata {
-    max_versions         = try(each.value.spec.maxVersions, null)
-    delete_version_after = try(each.value.spec.deleteVersionAfterSeconds, null)
+
+  # get custom_metadata from config if import is false
+  dynamic "custom_metadata" {
+    for_each = try(!each.value.spec.import, true) ? ["not_imported"] : []
+
+    content {
+      max_versions = try(each.value.spec.maxVersions, null)
+      # NOTE: delete the latest version, probably not needed
+      delete_version_after = try(each.value.spec.deleteVersionAfterSeconds, null)
+    }
   }
 }
 
