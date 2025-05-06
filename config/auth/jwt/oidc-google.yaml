@@ -2,24 +2,30 @@ metadata:
   name: oidc-google
   description: "Google OIDC backend"
 spec:
-  # path to oidc secrets in vault
+  # path to oidc kv secrets in vault (without the mount path)
   secretPath: oidc/google
   # mount path for the auth backend
   mountPath: oidc-google
+  # type of jwt auth; can be "jwt" or "odic"
   type: oidc
   oidc:
     discoveryUrl: "https://accounts.google.com"
     redirectUrls:
       - "http://localhost:8250/oidc/callback"
+    # list of role mappings (currently email to role)
     roleMappings:
       - roleName: terraform-vault
+        # policies for the role
         tokenPolicies:
           - default
           - terraform-vault
+        # list of OIDC scopes that are returned
         scopes:
           - openid
           - email
+        # the OIDC claim to use to identify the user; this will be used as an alias for the entity in vault
         userClaim: "email"
+        # list of claim values (emails) that can take on this role
         boundClaims:
           email: "69bnguyen@gmail.com"
         tokenTtlSeconds: 300 # 5 min
