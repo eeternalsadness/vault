@@ -1,4 +1,75 @@
-# FIXME: is there a way to tune this down? it probably needs all the perms to manage vault
-path "*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
+#####################################
+# Policies
+#####################################
+
+# create & manage policies
+path "sys/policies/acl/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# list policies
+path "sys/policies/acl" {
+  capabilities = ["list"]
+}
+
+#####################################
+# Auth
+#####################################
+
+# manage auth methods across vault
+path "auth/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# create, update, delete auth methods
+path "sys/auth/*" {
+  capabilities = ["create", "update", "delete", "sudo"]
+}
+
+# list auth methods
+path "sys/auth" {
+  capabilities = ["read"]
+}
+
+#####################################
+# Mounts
+#####################################
+
+# manage secret engines
+path "sys/mounts/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+# list secret engines
+path "sys/mounts" {
+  capabilities = ["read", "list"]
+}
+
+#####################################
+# KV
+#####################################
+
+# kv secret backend
+path "kvv1/config" {
+  capabilities = ["create", "update", "delete", "read"]
+}
+
+# kv secrets
+path "kvv1/*" {
+  capabilities = ["create", "update", "delete", "read"]
+}
+
+#####################################
+# KVV2
+#####################################
+
+# kvv2 secret backend
+path "kvv2/config" {
+  capabilities = ["create", "update", "delete", "read"]
+}
+
+# kvv2 secrets
+path "kvv2/data/*" {
+  capabilities = ["create", "update", "delete", "read"]
 }
