@@ -9,7 +9,7 @@ locals {
   secret-kvv2-import = {
     for k, v in local.secret-kvv2-map :
     k => {
-      path = format("%s/%s", vault_mount.kvv2.path, v.metadata.path)
+      path = format("%s/data/%s", vault_mount.kvv2.path, v.metadata.path)
     }
     if try(v.spec.import, false) && try(v.spec.enableVersioning, false)
   }
