@@ -32,7 +32,19 @@ variable "vault-path-secret-kv-v2" {
   default     = "kvv2"
 }
 
-# KVV2
+# KV SECRETS
+
+variable "kv-generated-secret-length" {
+  description = "The length of generated kv secrets"
+  type        = number
+  default     = 16
+}
+
+variable "kv-generated-secret-use-symbols" {
+  description = "Whether or not to include symbols in kv secrets (change the list of allowed symbols in scripts/generate-secret.py)"
+  type        = bool
+  default     = true
+}
 
 variable "kvv2-max-versions" {
   description = "Max number of versions a kvv2 secret can have"

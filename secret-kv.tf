@@ -3,6 +3,7 @@ locals {
   secret-kv-map = {
     for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
     trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name)))
+    if try(!yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name))).spec.enableVersioning, true)
   }
 
   secret-kv-import = {
@@ -86,16 +87,17 @@ data "external" "generate-secret-kv" {
 
   program = ["python3", "scripts/generate-secret.py"]
   query = {
-    length  = 16
-    symbols = true
+    length  = var.kv-generated-secret-length
+    symbols = var.kv-generated-secret-use-symbols
   }
 }
 
 # update timestamp in yaml file after a secret is created/updated for rotation purposes
-resource "null_resource" "update_timestamp" {
+resource "null_resource" "kv_update_timestamp" {
   for_each = {
     for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
     trimsuffix(file_name, ".yaml") => file_name
+    if try(!yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name))).spec.enableVersioning, true)
   }
 
   provisioner "local-exec" {
