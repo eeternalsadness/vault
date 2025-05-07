@@ -28,7 +28,7 @@ spec:
         # list of claim values (emails) that can take on this role
         boundClaims:
           email: "69bnguyen@gmail.com"
-        tokenTtlSeconds: 300 # 5 min
+        tokenTtlSeconds: 14400 # 4 hours
       - roleName: terraform-grafana
         tokenPolicies:
           - default
@@ -39,4 +39,4 @@ spec:
         userClaim: "email"
         boundClaims:
           email: "69bnguyen@gmail.com"
-        tokenTtlSeconds: 14400 # 4 hours
+        tokenTtlSeconds: 43200 # 12 hours
