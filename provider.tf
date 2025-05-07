@@ -19,7 +19,8 @@ terraform {
 }
 
 provider "vault" {
-  max_lease_ttl_seconds = 43200 # 12 hours
+  address               = var.vault-address
+  max_lease_ttl_seconds = var.vault-max-lease-ttl-seconds
 }
 
 provider "external" {}

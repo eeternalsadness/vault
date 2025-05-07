@@ -1,3 +1,14 @@
+variable "vault-address" {
+  description = "The URL of the vault server (hostname + port)"
+  type        = string
+}
+
+variable "vault-max-lease-ttl-seconds" {
+  description = "Duration of intermediate tokens that Terraform gets from Vault"
+  type        = number
+  default     = 600 # 10 minutes
+}
+
 # REPO PATHS
 
 variable "repo-path-policy" {
