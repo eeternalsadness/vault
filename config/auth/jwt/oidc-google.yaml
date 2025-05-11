@@ -6,7 +6,7 @@ spec:
   secretPath: oidc/google
   # mount path for the auth backend
   mountPath: oidc-google
-  # type of jwt auth; can be "jwt" or "odic"
+  # type of jwt auth; can be "jwt" or "oidc"
   type: oidc
   oidc:
     discoveryUrl: "https://accounts.google.com"
@@ -14,7 +14,7 @@ spec:
       - "http://localhost:8250/oidc/callback"
       - "https://vault.minikube.io/ui/vault/auth/oidc-google/oidc/callback"
     # list of role mappings (currently email to role)
-    roleMappings:
+    roles:
       - roleName: terraform-vault
         # policies for the role
         tokenPolicies:
@@ -27,8 +27,6 @@ spec:
         # the OIDC claim to use to identify the user; this will be used as an alias for the entity in vault
         userClaim: "email"
         # list of claim values (emails) that can take on this role
-        boundClaims:
-          email: "69bnguyen@gmail.com"
         tokenTtlSeconds: 14400 # 4 hours
       - roleName: terraform-grafana
         tokenPolicies:
@@ -38,8 +36,6 @@ spec:
           - openid
           - email
         userClaim: "email"
-        boundClaims:
-          email: "69bnguyen@gmail.com"
         tokenTtlSeconds: 14400 # 4 hours
       - roleName: admin
         tokenPolicies:
@@ -49,6 +45,4 @@ spec:
           - openid
           - email
         userClaim: "email"
-        boundClaims:
-          email: "69bnguyen@gmail.com"
         tokenTtlSeconds: 14400 # 4 hours
