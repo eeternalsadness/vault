@@ -52,7 +52,7 @@ path "sys/mounts" {
 
 # kv secrets
 path "kvv1/*" {
-  capabilities = ["create", "update", "delete", "read"]
+  capabilities = ["create", "update", "delete", "read", "list"]
 }
 
 #####################################
@@ -61,7 +61,7 @@ path "kvv1/*" {
 
 # kvv2 secrets
 path "kvv2/*" {
-  capabilities = ["create", "update", "delete", "read"]
+  capabilities = ["create", "update", "delete", "read", "list"]
 }
 
 #####################################
