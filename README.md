@@ -1,4 +1,4 @@
-# vault
+# Vault Terraform
 
 ## Setup
 
