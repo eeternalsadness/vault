@@ -1,7 +1,7 @@
 variable "vault-address" {
   description = "The URL of the vault server (hostname + port)"
   type        = string
-  default     = "http://vault.minikube.local"
+  default     = "https://vault.minikube.io"
 }
 
 variable "vault-max-lease-ttl-seconds" {
