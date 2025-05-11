@@ -1,13 +1,29 @@
 locals {
   auth-jwt-map = {
-    for file_name in fileset(format("%s/%s", path.module, var.repo-path-auth-jwt), "*.yaml") :
-    yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-auth-jwt, file_name))).metadata.name
-    => yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-auth-jwt, file_name)))
+    for file_name in fileset("${path.module}/${var.repo-path-auth-jwt}", "*/*.yaml") :
+    yamldecode(file("${path.module}/${var.repo-path-auth-jwt}/${file_name}")).metadata.name
+    => yamldecode(file("${path.module}/${var.repo-path-auth-jwt}/${file_name}"))
   }
 
-  auth-jwt-oidc-role-mappings = merge([
+  #auth-jwt-role-mappings = merge([
+  #  for file_path in fileset("${path.module}/${var.repo-path-auth-jwt-role-mappings}", "*/*.yaml") : try(merge([
+  #    for k, v in yamldecode(file("${path.module}/${var.repo-path-auth-jwt-role-mappings}/${file_path}")) : {
+  #      "${basename(dirname(file_path))}" = merge({ folder = basename(dirname(file_path)) }, v)
+  #    }
+  #  ]...), {})
+  #]...)
+
+  auth-jwt-role-mappings = merge([
+    for k, v in local.auth-jwt-map : {k => merge([
+      for file_name in fileset("${path.module}/${var.repo-path-auth-jwt}/${k}/role-mappings", "*.yaml") : merge([
+        yamldecode("${path.module}/${var.repo-path-auth-jwt}/${k}/role-mappings/${file_name}")
+      ]...)
+    ]...)}
+  ]...)
+
+  auth-oidc-role-map = merge([
     for k, v in local.auth-jwt-map : {
-      for role in v.spec.oidc.roleMappings :
+      for role in v.spec.oidc.roles :
       format("%s/%s", k, role.roleName) => {
         backend_name  = v.metadata.name
         redirect_urls = v.spec.oidc.redirectUrls
@@ -37,7 +53,7 @@ resource "vault_jwt_auth_backend" "jwt" {
 }
 
 resource "vault_jwt_auth_backend_role" "oidc" {
-  for_each = local.auth-jwt-oidc-role-mappings
+  for_each = local.auth-oidc-role-map
 
   backend        = vault_jwt_auth_backend.jwt[each.value.backend_name].path
   role_name      = each.value.role_map.roleName
