@@ -47,9 +47,10 @@ resource "vault_jwt_auth_backend" "jwt" {
   for_each = local.auth-jwt-map
 
   description        = each.value.metadata.description
-  oidc_discovery_url = each.value.spec.oidc.discoveryUrl
+  oidc_discovery_url = each.value.spec.type == "oidc" ? each.value.spec.oidc.discoveryUrl : null
   oidc_client_id     = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_id : null
   oidc_client_secret = each.value.spec.type == "oidc" ? jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_secret : null
+  bound_issuer       = try(each.value.spec.type == "oidc" ? each.value.spec.oidc.boundIssuer : null, null)
   path               = each.value.spec.mountPath
   type               = each.value.spec.type
 }
