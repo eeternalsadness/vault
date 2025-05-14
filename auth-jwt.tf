@@ -13,13 +13,13 @@ locals {
   #  ]...), {})
   #]...)
 
-  auth-jwt-role-mappings = merge([
-    for k, v in local.auth-jwt-map : {k => merge([
+  auth-jwt-role-mappings = merge({
+    for k, v in local.auth-jwt-map : k => merge([
       for file_name in fileset("${path.module}/${var.repo-path-auth-jwt}/${k}/role-mappings", "*.yaml") : merge([
         yamldecode("${path.module}/${var.repo-path-auth-jwt}/${k}/role-mappings/${file_name}")
       ]...)
-    ]...)}
-  ]...)
+    ]...)
+  }...)
 
   auth-oidc-role-map = merge([
     for k, v in local.auth-jwt-map : {
@@ -62,7 +62,7 @@ resource "vault_jwt_auth_backend_role" "oidc" {
   role_type    = "oidc"
   oidc_scopes  = each.value.role_map.scopes
   user_claim   = each.value.role_map.userClaim
-  bound_claims = each.value.role_map.boundClaims
+  bound_claims = local.auth-jwt-role-mappings[each.value.backend_name][each.value.roleName].bound_claims
 
   allowed_redirect_uris = each.value.redirect_urls
 
