@@ -5,14 +5,6 @@ locals {
     => yamldecode(file("${path.module}/${var.repo-path-auth-jwt}/${file_name}"))
   }
 
-  #auth-jwt-role-mappings = merge([
-  #  for file_path in fileset("${path.module}/${var.repo-path-auth-jwt-role-mappings}", "*/*.yaml") : try(merge([
-  #    for k, v in yamldecode(file("${path.module}/${var.repo-path-auth-jwt-role-mappings}/${file_path}")) : {
-  #      "${basename(dirname(file_path))}" = merge({ folder = basename(dirname(file_path)) }, v)
-  #    }
-  #  ]...), {})
-  #]...)
-
   auth-jwt-role-mappings = {
     for k, v in local.auth-jwt-map : k => merge([
       for file_name in fileset("${path.module}/${var.repo-path-auth-jwt}/${k}/role-mappings", "*.yaml") :
