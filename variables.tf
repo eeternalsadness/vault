@@ -1,8 +1,8 @@
-variable "vault-address" {
-  description = "The URL of the vault server (hostname + port)"
-  type        = string
-  default     = "https://vault.minikube.io"
-}
+#variable "vault-address" {
+#  description = "The URL of the vault server (hostname + port)"
+#  type        = string
+#  default     = "https://vault.minikube.io"
+#}
 
 variable "vault-max-lease-ttl-seconds" {
   description = "Duration of intermediate tokens that Terraform gets from Vault"

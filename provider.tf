@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "vault" {
-  address               = var.vault-address
+  #address               = var.vault-address
   max_lease_ttl_seconds = var.vault-max-lease-ttl-seconds
 }
 
