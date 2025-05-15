@@ -37,7 +37,8 @@ locals {
 }
 
 data "vault_kv_secret_v2" "jwt" {
-  for_each = local.auth-jwt-map
+  # only oidc needs to access client id & client secret
+  for_each = { for k, v in local.auth-jwt-map : k => v if v.spec.type == "oidc" }
 
   mount = vault_mount.kvv2.path
   name  = each.value.spec.secretPath
