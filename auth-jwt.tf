@@ -53,6 +53,11 @@ resource "vault_jwt_auth_backend" "jwt" {
   bound_issuer       = try(each.value.spec.type == "oidc" ? each.value.spec.oidc.boundIssuer : null, null)
   path               = each.value.spec.mountPath
   type               = each.value.spec.type
+  tune {
+    listing_visibility = "unauth"
+    default_lease_ttl  = try(each.value.spec.defaultLeaseTtl, null)
+    max_lease_ttl      = try(each.value.spec.maxLeaseTtl, null)
+  }
 }
 
 resource "vault_jwt_auth_backend_role" "oidc" {
