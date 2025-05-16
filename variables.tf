@@ -32,12 +32,6 @@ variable "repo-path-auth-jwt" {
 
 # VAULT PATHS
 
-variable "vault-path-secret-kv" {
-  description = "The path in vault where kv secrets are stored"
-  type        = string
-  default     = "kvv1"
-}
-
 variable "vault-path-secret-kv-v2" {
   description = "The path in vault where kvv2 secrets are stored"
   type        = string
@@ -56,12 +50,6 @@ variable "kv-generated-secret-use-symbols" {
   description = "Whether or not to include symbols in kv secrets (change the list of allowed symbols in scripts/generate-secret.py)"
   type        = bool
   default     = true
-}
-
-variable "kv-lease-ttl-seconds" {
-  description = "Number of seconds that a kv secret is valid for, after which it needs to be fetched again"
-  type        = number
-  default     = 300 # 5 minutes
 }
 
 variable "kvv2-lease-ttl-seconds" {
