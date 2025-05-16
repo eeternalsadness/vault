@@ -1,0 +1,15 @@
+metadata:
+  name: terraform-grafana
+spec:
+  tokenPolicies:
+    - default
+    - terraform-grafana
+  tokenTtlSeconds: 14400 # 4 hours
+  scopes:
+    - openid
+    - email
+  userClaim: "email"
+  boundClaims:
+    # list of emails that can take on this role
+    email:
+      - 69bnguyen@gmail.com
