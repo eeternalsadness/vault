@@ -85,4 +85,4 @@ For generated secrets (secrets with the `spec.generated` fields), you can define
 
 ## GitLab integration
 
-See [GitLab Integration](/vault/docs/gitlab-integration.md)
+See [GitLab Integration](/docs/gitlab-integration.md)

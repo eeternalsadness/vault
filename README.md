@@ -50,7 +50,7 @@ vl terraform-vault
 
 ## Configure Vault
 
-See [Configure Vault](/vault/docs/configure-vault.md).
+See [Configure Vault](/docs/configure-vault.md).
 
 ## To-dos
 
