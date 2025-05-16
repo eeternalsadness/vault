@@ -1,25 +1,29 @@
 locals {
   # map name => yaml content for each kv secret file
   secret-kvv2-map = {
-    for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
-    trimsuffix(file_name, ".yaml") => yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name)))
-    if try(yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name))).spec.enableVersioning, false)
+    for file_name in fileset("${path.module}/${var.repo-path-secret-kv}", "*.yaml") :
+    yamldecode(file("${path.module}/${var.repo-path-secret-kv}/${file_name}")).metadata.path
+    => yamldecode(file("${path.module}/${var.repo-path-secret-kv}/${file_name}"))
   }
 
-  secret-kvv2-import = {
-    for k, v in local.secret-kvv2-map :
-    k => {
-      path = format("%s/data/%s", vault_mount.kvv2.path, v.metadata.path)
+  secret-kvv2-import = merge([
+    for file_name in fileset("${path.module}/${var.repo-path-secret-kv}/imports", "*.yaml") : {
+      for secret_path in yamldecode(file("${path.module}/${var.repo-path-secret-kv}/imports/${file_name}")) :
+      secret_path => {
+        path            = secret_path
+        path_with_mount = format("%s/data/%s", vault_mount.kvv2.path, secret_path)
+      }
     }
-    if try(v.spec.import, false) && try(v.spec.enableVersioning, false)
-  }
+  ]...)
+
+  secret-kvv2-paths = concat(keys(local.secret-kvv2-map), keys(local.secret-kvv2-import))
 
   # map name => yaml content for each kv secret file
   # IF rotateInterval is set AND (there's no timestamp OR modify timestamp + rotateInterval < current timestamp)
   secret-kvv2-rotation-map = {
     for k, v in local.secret-kvv2-map :
     k => v
-    if try(v.spec.enableVersioning, false) && contains(keys(v.spec), "rotateInterval") && timecmp(
+    if contains(keys(v.spec), "rotateInterval") && timecmp(
       timeadd(
         contains(keys(v.metadata), "timestamp") ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
         try(v.spec.rotateInterval, "0s")
@@ -77,32 +81,32 @@ resource "vault_kv_secret_backend_v2" "kvv2" {
 }
 
 resource "vault_kv_secret_v2" "kvv2" {
-  for_each = local.secret-kvv2-map
+  for_each = toset(local.secret-kvv2-paths)
 
   mount = vault_mount.kvv2.path
-  name  = each.value.metadata.path
+  name  = contains(keys(local.secret-kvv2-map), each.value) ? local.secret-kvv2-map[each.value].metadata.path : local.secret-kvv2-import[each.value].path
   # WARN: delete all versions of secret if the config is deleted
   delete_all_versions = true
   # only update for secrets that need to be rotated, otherwise use current value
-  data_json = contains(keys(local.secret-kvv2-rotation-map), each.key) ? jsonencode(local.secret-kvv2-secrets[each.key]) : data.vault_kv_secret_v2.kvv2[each.key].data_json
+  data_json = contains(keys(local.secret-kvv2-rotation-map), each.key) ? jsonencode(local.secret-kvv2-secrets[each.value]) : data.vault_kv_secret_v2.kvv2[each.value].data_json
 
-  # get custom_metadata from config if import is false
+  # get custom_metadata from config if not imported
   dynamic "custom_metadata" {
-    for_each = try(!each.value.spec.import, true) ? ["not_imported"] : []
+    for_each = contains(keys(local.secret-kvv2-map), each.value) ? ["not_imported"] : []
 
     content {
-      max_versions = try(each.value.spec.maxVersions, null)
+      max_versions = try(local.secret-kvv2-map[each.value].spec.maxVersions, null)
       # NOTE: delete the latest version, probably not needed
-      delete_version_after = try(each.value.spec.deleteVersionAfterSeconds, null)
+      delete_version_after = try(local.secret-kvv2-map[each.value].spec.deleteVersionAfterSeconds, null)
     }
   }
 }
 
 data "vault_kv_secret_v2" "kvv2" {
-  for_each = { for k, v in local.secret-kvv2-map : k => v if !contains(keys(local.secret-kvv2-rotation-map), k) }
+  for_each = toset([for path in local.secret-kvv2-paths : path if !contains(keys(local.secret-kvv2-rotation-map), path)])
 
   mount = vault_mount.kvv2.path
-  name  = each.value.metadata.path
+  name  = contains(keys(local.secret-kvv2-map), each.key) ? local.secret-kvv2-map[each.key].metadata.path : local.secret-kvv2-import[each.key].path
 }
 
 # generate secrets for secrets that need to be rotated
@@ -119,20 +123,19 @@ data "external" "generate-secret-kvv2" {
 # update timestamp in yaml file after a secret is created/updated for rotation purposes
 resource "null_resource" "kvv2_update_timestamp" {
   for_each = {
-    for file_name in fileset(format("%s/%s", path.module, var.repo-path-secret-kv), "*.yaml") :
-    trimsuffix(file_name, ".yaml") => file_name
-    if try(yamldecode(file(format("%s/%s/%s", path.module, var.repo-path-secret-kv, file_name))).spec.enableVersioning, false)
+    for file_name in fileset("${path.module}/${var.repo-path-secret-kv}", "*.yaml") :
+    file_name => yamldecode(file("${path.module}/${var.repo-path-secret-kv}/${file_name}"))
   }
 
   provisioner "local-exec" {
     command = "python3 scripts/update-timestamp.py $file_path"
     environment = {
-      file_path = format("%s/%s/%s", path.module, var.repo-path-secret-kv, each.value)
+      file_path = format("%s/%s/%s", path.module, var.repo-path-secret-kv, each.key)
     }
   }
 
   triggers = {
-    secret_updated = vault_kv_secret_v2.kvv2[each.key].data_json
+    secret_updated = vault_kv_secret_v2.kvv2[each.value.metadata.path].data_json
   }
 
   depends_on = [vault_kv_secret_v2.kvv2]
@@ -141,6 +144,6 @@ resource "null_resource" "kvv2_update_timestamp" {
 import {
   for_each = local.secret-kvv2-import
 
-  id = each.value.path
+  id = each.value.path_with_mount
   to = vault_kv_secret_v2.kvv2[each.key]
 }
