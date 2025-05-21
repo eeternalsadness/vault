@@ -128,9 +128,10 @@ resource "null_resource" "kvv2_update_timestamp" {
   }
 
   provisioner "local-exec" {
-    command = "python3 scripts/update-timestamp.py $file_path"
+    command = "python3 scripts/update-timestamp.py $file_path $timestamp"
     environment = {
       file_path = format("%s/%s/%s", path.module, var.repo-path-secret-kv, each.key)
+      timestamp = vault_kv_secret_v2.kvv2[each.value.metadata.path].metadata.created_time
     }
   }
 

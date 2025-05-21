@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import yaml
-import datetime
 import sys
 
 file_path = str(sys.argv[1])
+timestamp = str(sys.argv[2])
 
 # Load YAML
 with open(file_path, "r") as f:
@@ -14,9 +14,8 @@ with open(file_path, "r") as f:
 if "metadata" not in data:
     data["metadata"] = {}
 
-# Update timestamp in RFC3339 (Terraform-compatible)
-now_utc = datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat()
-data["metadata"]["timestamp"] = now_utc
+# Update timestamp
+data["metadata"]["timestamp"] = timestamp
 
 # Write back to file
 with open(file_path, "w") as f:
