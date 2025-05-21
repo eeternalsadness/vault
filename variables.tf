@@ -17,25 +17,25 @@ variable "vault-max-lease-ttl-seconds" {
 variable "repo-path-policy" {
   description = "The path in the repo where policies are configured"
   type        = string
-  default     = "envs/dev/policies"
+  default     = "envs/minikube/policies"
 }
 
 variable "repo-path-secret-kv" {
   description = "The path in the repo where kv secrets are configured"
   type        = string
-  default     = "envs/dev/secrets/kv"
+  default     = "envs/minikube/secrets/kv"
 }
 
 variable "repo-path-secret-database" {
   description = "The path in the repo where database connections and roles are configured"
   type        = string
-  default     = "envs/dev/secrets/database"
+  default     = "envs/minikube/secrets/database"
 }
 
 variable "repo-path-auth-jwt" {
   description = "The path in the repo where jwt auth backends are configured"
   type        = string
-  default     = "envs/dev/auth/jwt"
+  default     = "envs/minikube/auth/jwt"
 }
 
 ###################################
