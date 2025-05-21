@@ -1,0 +1,18 @@
+metadata:
+  name: terraform-vault
+spec:
+  # policies for the role
+  tokenPolicies:
+    - default
+    - terraform-vault
+  tokenTtlSeconds: 14400 # 4 hours
+  # list of OIDC scopes that are returned
+  scopes:
+    - openid
+    - email
+  # the OIDC claim to use to identify the user; this will be used as an alias for the entity in vault
+  userClaim: "email"
+  boundClaims:
+    # list of emails that can take on this role
+    email:
+      - 69bnguyen@gmail.com

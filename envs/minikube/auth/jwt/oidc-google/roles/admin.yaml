@@ -1,0 +1,14 @@
+metadata:
+  name: admin
+spec:
+  tokenPolicies:
+    - default
+    - admin
+  tokenTtlSeconds: 14400 # 4 hours
+  scopes:
+    - openid
+    - email
+  userClaim: "email"
+  boundClaims:
+    email:
+      - 69bnguyen@gmail.com

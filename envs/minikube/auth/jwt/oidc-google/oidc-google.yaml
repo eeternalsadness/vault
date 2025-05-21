@@ -1,0 +1,18 @@
+metadata:
+  name: oidc-google
+  description: "Google OIDC backend"
+spec:
+  # path to oidc kv secrets in vault (without the mount path)
+  secretPath: oidc/google
+  # mount path for the auth backend
+  mountPath: oidc-google
+  # type of jwt auth; can be "jwt" or "oidc"
+  type: oidc
+  discoveryUrl: "https://accounts.google.com"
+  boundIssuer: "https://accounts.google.com"
+  redirectUrls:
+    - "http://localhost:8250/oidc/callback"
+    - "https://vault.minikube.io/ui/vault/auth/oidc-google/oidc/callback"
+  defaultLeaseTtl: "4h"
+  maxLeaseTtl: "12h"
+  enableOnWebUi: true
