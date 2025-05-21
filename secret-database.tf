@@ -27,6 +27,8 @@ resource "vault_database_secrets_mount" "database" {
   lifecycle {
     ignore_changes = [mongodb]
   }
+
+  depends_on = [vault_policy.policy]
 }
 
 #data "vault_kv_secret_v2" "database" {
@@ -56,6 +58,8 @@ resource "vault_database_secret_backend_connection" "database" {
       username_template    = try(each.value.spec.mongodb.usernameTemplate, null)
     }
   }
+
+  depends_on = [vault_policy.policy]
 }
 
 resource "vault_database_secret_backend_static_role" "database" {
@@ -70,6 +74,8 @@ resource "vault_database_secret_backend_static_role" "database" {
   rotation_schedule   = try(each.value.role_config.spec.rotationSchedule, null)
   rotation_window     = try(each.value.role_config.spec.rotationWindowSeconds, null)
   rotation_statements = try(each.value.role_config.spec.rotationStatements, null)
+
+  depends_on = [vault_policy.policy]
 }
 
 resource "vault_database_secret_backend_role" "database" {
@@ -81,4 +87,6 @@ resource "vault_database_secret_backend_role" "database" {
   creation_statements = each.value.role_config.spec.creationStatements
   default_ttl         = each.value.role_config.spec.defaultTtlSeconds
   max_ttl             = each.value.role_config.spec.maxTtlSeconds
+
+  depends_on = [vault_policy.policy]
 }

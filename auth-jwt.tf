@@ -26,14 +26,6 @@ locals {
   }
 }
 
-#data "vault_kv_secret_v2" "jwt" {
-#  # only oidc needs to access client id & client secret
-#  for_each = { for k, v in local.auth-jwt-map : k => v if v.spec.type == "oidc" }
-#
-#  mount = vault_mount.kvv2.path
-#  name  = each.value.spec.secretPath
-#}
-
 resource "vault_jwt_auth_backend" "jwt" {
   for_each = local.auth-jwt-map
 
@@ -50,6 +42,8 @@ resource "vault_jwt_auth_backend" "jwt" {
     max_lease_ttl      = try(each.value.spec.maxLeaseTtl, null)
     token_type         = "default-service"
   }
+
+  depends_on = [vault_policy.policy]
 }
 
 resource "vault_jwt_auth_backend_role" "jwt" {
@@ -69,4 +63,6 @@ resource "vault_jwt_auth_backend_role" "jwt" {
 
   token_explicit_max_ttl = try(each.value.role_config.spec.tokenTtlSeconds, null)
   token_ttl              = try(each.value.role_config.spec.tokenTtlSeconds, null)
+
+  depends_on = [vault_policy.policy]
 }

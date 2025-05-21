@@ -72,12 +72,16 @@ resource "vault_mount" "kvv2" {
   description               = "KV version 2 secret engine mount"
   default_lease_ttl_seconds = var.kvv2-lease-ttl-seconds
   max_lease_ttl_seconds     = var.kvv2-lease-ttl-seconds
+
+  depends_on = [vault_policy.policy]
 }
 
 resource "vault_kv_secret_backend_v2" "kvv2" {
   mount                = vault_mount.kvv2.path
   max_versions         = var.kvv2-max-versions
   delete_version_after = var.kvv2-delete-version-after-seconds
+
+  depends_on = [vault_policy.policy]
 }
 
 resource "vault_kv_secret_v2" "kvv2" {
@@ -100,6 +104,8 @@ resource "vault_kv_secret_v2" "kvv2" {
       delete_version_after = try(local.secret-kvv2-map[each.value].spec.deleteVersionAfterSeconds, null)
     }
   }
+
+  depends_on = [vault_policy.policy]
 }
 
 data "vault_kv_secret_v2" "kvv2" {
@@ -107,6 +113,8 @@ data "vault_kv_secret_v2" "kvv2" {
 
   mount = vault_mount.kvv2.path
   name  = contains(keys(local.secret-kvv2-map), each.key) ? local.secret-kvv2-map[each.key].metadata.path : local.secret-kvv2-import[each.key].path
+
+  depends_on = [vault_policy.policy]
 }
 
 # generate secrets for secrets that need to be rotated
