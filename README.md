@@ -2,8 +2,8 @@
 
 - [Setup](#setup)
 - [Log in to Vault via the CLI](#log-in-to-vault-via-the-cli)
-- [Running Terraform commands](#running-terraform-commands)
 - [Configure Vault](#configure-vault)
+- [To-dos](#to-dos)
 
 ## Setup
 
@@ -25,7 +25,7 @@ pip install pyyaml
 To manage Vault with Terraform, you need to log in to Vault with the `terraform-vault` role from the CLI and export the token that's returned from the login request.
 
 ```bash
-vault login -method=oidc -path=oidc-google role="terraform-vault"
+vault login -method=oidc -path=auth-backend-mount-path role="role-name"
 export VAULT_TOKEN="some-vault-token"
 ```
 
