@@ -47,21 +47,21 @@ path "sys/mounts" {
 }
 
 #####################################
-# KV
-#####################################
-
-# kv secrets
-path "kvv1/*" {
-  capabilities = ["create", "update", "delete", "read", "list"]
-}
-
-#####################################
 # KVV2
 #####################################
 
 # kvv2 secrets
 path "kvv2/*" {
   capabilities = ["create", "update", "delete", "read", "list"]
+}
+
+#####################################
+# Database
+#####################################
+
+# database secrets
+path "database/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
 #####################################
