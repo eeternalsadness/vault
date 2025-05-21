@@ -26,21 +26,21 @@ locals {
   }
 }
 
-data "vault_kv_secret_v2" "jwt" {
-  # only oidc needs to access client id & client secret
-  for_each = { for k, v in local.auth-jwt-map : k => v if v.spec.type == "oidc" }
-
-  mount = vault_mount.kvv2.path
-  name  = each.value.spec.secretPath
-}
+#data "vault_kv_secret_v2" "jwt" {
+#  # only oidc needs to access client id & client secret
+#  for_each = { for k, v in local.auth-jwt-map : k => v if v.spec.type == "oidc" }
+#
+#  mount = vault_mount.kvv2.path
+#  name  = each.value.spec.secretPath
+#}
 
 resource "vault_jwt_auth_backend" "jwt" {
   for_each = local.auth-jwt-map
 
   description        = each.value.metadata.description
   oidc_discovery_url = each.value.spec.discoveryUrl
-  oidc_client_id     = try(jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_id, null)
-  oidc_client_secret = try(jsondecode(data.vault_kv_secret_v2.jwt[each.key].data_json).client_secret, null)
+  oidc_client_id     = try(jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.secretPath].data_json).client_id, null)
+  oidc_client_secret = try(jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.secretPath].data_json).client_secret, null)
   bound_issuer       = try(each.value.spec.boundIssuer, null)
   path               = each.value.spec.mountPath
   type               = each.value.spec.type
