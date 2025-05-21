@@ -1,9 +1,9 @@
 locals {
-  secret-database-map = {
+  secret-database-map = try({
     for file_name in fileset("${path.module}/${var.repo-path-secret-database}", "*/*.yaml") :
     yamldecode(file("${path.module}/${var.repo-path-secret-database}/${file_name}")).metadata.name
     => yamldecode(file("${path.module}/${var.repo-path-secret-database}/${file_name}"))
-  }
+  }, {})
 
   secret-database-roles = merge([
     for connection in keys(local.secret-database-map) : {
