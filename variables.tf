@@ -10,27 +10,37 @@ variable "vault-max-lease-ttl-seconds" {
   default     = 600 # 10 minutes
 }
 
+###################################
 # REPO PATHS
+###################################
 
 variable "repo-path-policy" {
   description = "The path in the repo where policies are configured"
   type        = string
-  default     = "config/policies"
+  default     = "envs/dev/policies"
 }
 
 variable "repo-path-secret-kv" {
-  description = "The path in the repo where kv secrets (both v1 and v2) are configured"
+  description = "The path in the repo where kv secrets are configured"
   type        = string
-  default     = "config/secrets/kv"
+  default     = "envs/dev/secrets/kv"
+}
+
+variable "repo-path-secret-database" {
+  description = "The path in the repo where database connections and roles are configured"
+  type        = string
+  default     = "envs/dev/secrets/database"
 }
 
 variable "repo-path-auth-jwt" {
   description = "The path in the repo where jwt auth backends are configured"
   type        = string
-  default     = "config/auth/jwt"
+  default     = "envs/dev/auth/jwt"
 }
 
+###################################
 # VAULT PATHS
+###################################
 
 variable "vault-path-secret-kv-v2" {
   description = "The path in vault where kvv2 secrets are stored"
@@ -38,7 +48,15 @@ variable "vault-path-secret-kv-v2" {
   default     = "kvv2"
 }
 
+variable "vault-path-secret-database" {
+  description = "The path in vault where the database secret backend is mounted"
+  type        = string
+  default     = "database"
+}
+
+###################################
 # KV SECRETS
+###################################
 
 variable "kv-generated-secret-length" {
   description = "The length of generated kv secrets"
@@ -68,4 +86,20 @@ variable "kvv2-delete-version-after-seconds" {
   description = "Number of seconds a kvv2 secret version should be retained for before getting deleted"
   type        = number
   default     = null
+}
+
+###################################
+# DATABASE SECRETS
+###################################
+
+variable "database-default-lease-ttl-seconds" {
+  description = "The default number of seconds that a generated database secret is valid for"
+  type        = number
+  default     = 300 # 4 hours
+}
+
+variable "database-max-lease-ttl-seconds" {
+  description = "The max number of seconds that a generated database secret can be valid for"
+  type        = number
+  default     = 3600 # 1 hour
 }
