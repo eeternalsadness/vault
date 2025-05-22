@@ -113,8 +113,6 @@ data "vault_kv_secret_v2" "kvv2" {
 
   mount = vault_mount.kvv2.path
   name  = contains(keys(local.secret-kvv2-map), each.key) ? local.secret-kvv2-map[each.key].metadata.path : local.secret-kvv2-import[each.key].path
-
-  depends_on = [vault_policy.policy]
 }
 
 # generate secrets for secrets that need to be rotated

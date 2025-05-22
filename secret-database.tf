@@ -31,13 +31,6 @@ resource "vault_database_secrets_mount" "database" {
   depends_on = [vault_policy.policy]
 }
 
-#data "vault_kv_secret_v2" "database" {
-#  for_each = local.secret-database-map
-#
-#  mount = vault_mount.kvv2.path
-#  name  = each.value.spec.initialRootCredentialsKvPath
-#}
-
 resource "vault_database_secret_backend_connection" "database" {
   for_each = local.secret-database-map
 
