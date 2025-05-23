@@ -2,6 +2,7 @@
 
 - [Setup](#setup)
 - [Log in to Vault via the CLI](#log-in-to-vault-via-the-cli)
+- [Run Terraform commands](#run-terraform-commands)
 - [Configure Vault](#configure-vault)
 - [To-dos](#to-dos)
 
@@ -46,6 +47,15 @@ You can then log in to any role with the `vl` alias.
 
 ```bash
 vl terraform-vault
+```
+
+## Run Terraform commands
+
+To run `terraform plan` and `terraform apply` commands, use the scripts `plan.sh` and `apply.sh` in the `scripts` directory. Make sure you run them from the repo's root folder.
+
+```bash
+./scripts/plan.sh # plan
+./scripts/apply.sh # apply
 ```
 
 ## Configure Vault
