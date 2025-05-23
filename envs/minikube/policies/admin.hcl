@@ -33,6 +33,46 @@ path "sys/auth" {
 }
 
 #####################################
+# Seal/unseal
+#####################################
+
+# allow to seal vault
+path "sys/seal"
+{
+  capabilities = ["update", "sudo"]
+}
+
+# allow to unseal vault
+path "sys/unseal"
+{
+  capabilities = ["update", "sudo"]
+}
+
+#####################################
+# Leases
+#####################################
+
+# look up leases
+path "sys/leases/lookup/" {
+  capabilities = ["list", "sudo"]
+}
+
+# look up leases
+path "sys/leases/lookup/*" {
+  capabilities = ["list", "sudo"]
+}
+
+# revoke leases
+path "sys/leases/revoke" {
+  capabilities = ["update", "sudo"]
+}
+
+# revoke leases based on prefix
+path "sys/leases/revoke-prefix/*" {
+  capabilities = ["update", "sudo"]
+}
+
+#####################################
 # Mounts
 #####################################
 
@@ -46,13 +86,9 @@ path "sys/mounts" {
   capabilities = ["read", "list"]
 }
 
-#####################################
-# KV
-#####################################
-
-# kv secrets
-path "kvv1/*" {
-  capabilities = ["create", "update", "delete", "read", "list"]
+# remount
+path "sys/remount" {
+  capabilities = ["update"]
 }
 
 #####################################
@@ -61,7 +97,7 @@ path "kvv1/*" {
 
 # kvv2 secrets
 path "kvv2/*" {
-  capabilities = ["create", "update", "delete", "read", "list"]
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
 #####################################
@@ -77,7 +113,7 @@ path "database/*" {
 # Others
 #####################################
 
-# read-only access to everything
+# read only on other paths
 path "*" {
   capabilities = ["read", "list"]
 }
