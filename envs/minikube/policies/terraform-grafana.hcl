@@ -1,8 +1,3 @@
-# read access on kvv2 mount path
-#path "kvv2" {
-#  capabilities = ["read"]
-#}
-
 # read access on google oidc kvv2 secret
 path "kvv2/data/oidc/google" {
   capabilities = ["read"]
