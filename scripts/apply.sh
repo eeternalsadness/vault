@@ -1,23 +1,12 @@
 #!/bin/bash
 
-echo "WARNING: make sure to run this inside the repo's root"
-echo "WARNING: make sure to export VAULT_ADDR and VAULT_TOKEN"
+set -eo pipefail
 
-# get config env
-env="$1"
+source "$(dirname $0)/common.sh"
 
-if [[ -z "$env" ]]; then
-  read -rp "Enter env to use [minikube/homelab]: " env
-fi
+terraform_role="terraform-grafana"
 
-case "$env" in
-"minikube") ;;
-"homelab") ;;
-*)
-  echo "Unrecognized input: '${env}'. Input must be 'minikube' or 'homelab'"
-  exit 1
-  ;;
-esac
+vault_login "$terraform_role"
 
-terraform init -backend-config="envs/${env}/.config/backend-config.conf" -reconfigure
-terraform apply -var-file="envs/${env}/.config/terraform.tfvars"
+terraform init -backend-config="$(dirname $0)/../envs/${env}/.config/backend.conf" -reconfigure
+terraform apply -var-file="$(dirname $0)/../envs/${env}/.config/terraform.tfvars"
