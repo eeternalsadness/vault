@@ -4,7 +4,7 @@ set -eo pipefail
 
 source "$(dirname $0)/common.sh"
 
-terraform_role="terraform-grafana"
+terraform_role="terraform-vault"
 
 vault_login "$terraform_role"
 
