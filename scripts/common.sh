@@ -55,6 +55,7 @@ function is_vault_token_role_valid() {
     file_token=$(<"$VAULT_TOKEN_FILE")
     token_role=$(VAULT_TOKEN="$file_token" vault token lookup -format=json | jq -r '.data.meta.role')
     if [[ "$required_role" == "$token_role" ]]; then
+      export VAULT_TOKEN="$file_token"
       return 0
     fi
   fi
@@ -108,6 +109,8 @@ env="$1"
 
 if [[ -z "$env" ]]; then
   read -rp "Enter env to use [minikube/homelab]: " env
+else
+  shift # remove env from positional args
 fi
 
 case "$env" in
