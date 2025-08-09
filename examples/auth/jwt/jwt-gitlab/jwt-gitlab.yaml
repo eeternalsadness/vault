@@ -1,0 +1,14 @@
+metadata:
+  name: jwt-gitlab
+  description: "GitLab JWT backend"
+spec:
+  # mount path for the auth backend
+  mountPath: jwt-gitlab
+  # type of jwt auth; can be "jwt" or "oidc"
+  type: jwt
+  discoveryUrl: "https://gitlab.com"
+  boundIssuer: "https://gitlab.com"
+  defaultLeaseTtl: "1h"
+  maxLeaseTtl: "2h"
+  # whether or not to show the auth method on the web UI
+  enableOnWebUi: false

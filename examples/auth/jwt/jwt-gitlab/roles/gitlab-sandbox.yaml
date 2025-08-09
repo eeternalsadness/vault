@@ -1,0 +1,23 @@
+metadata:
+  name: gitlab-sandbox
+spec:
+  # policies for the role
+  tokenPolicies:
+    - default
+    - gitlab-sandbox
+  # the claim to use to identify the user; this will be used as an alias for the entity in vault
+  userClaim: "project_id"
+  # map of bound claims
+  boundClaims:
+    iss:
+      - https://gitlab.com
+      - gitlab.com
+    project_id:
+      - 420
+    ref:
+      - main
+    ref_type:
+      - branch
+  # list of bound audiences (same as the aud claim in the jwt)
+  boundAudiences:
+    - https://gitlab.com
