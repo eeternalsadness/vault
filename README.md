@@ -51,7 +51,11 @@ vl terraform-vault
 
 ## Run Terraform commands
 
-To run `terraform plan` and `terraform apply` commands, use the scripts `plan.sh` and `apply.sh` in the `scripts` directory. Make sure you run them from the repo's root folder.
+You can also set up the Terraform scripts to run `terraform plan` and `terraform apply` with built-in Vault OIDC authentication. Update the Vault and Consul (if used as backend) endpoints in [common.sh](/scripts/common.sh) as necessary.
+
+To run `terraform plan` or `terraform apply`, simply run the [plan.sh](/scripts/plan.sh) or [apply.sh](/scripts/apply.sh) script. Make sure you run the scripts from the repo's root folder.
+
+These scripts currently support local and Consul backends.
 
 ```bash
 ./scripts/plan.sh # plan
