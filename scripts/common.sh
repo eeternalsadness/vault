@@ -97,11 +97,6 @@ function consul_get_token() {
   export CONSUL_HTTP_TOKEN="$consul_token"
 }
 
-function grafana_auth() {
-  local vault_secret_path="$1"
-  export GRAFANA_AUTH="$(vault kv get -mount=kvv2 -field=username ${vault_secret_path}):$(vault kv get -mount=kvv2 -field=password ${vault_secret_path})"
-}
-
 echo "WARNING: make sure to run this inside the terraform root folder"
 
 # get config env
@@ -116,11 +111,11 @@ fi
 case "$env" in
 "minikube")
   export VAULT_ADDR="https://vault.minikube.io"
-  export GRAFANA_URL="https://grafana.minikube.io"
+  #export CONSUL_HTTP_ADDR=""
   ;;
 "homelab")
   export VAULT_ADDR="https://vault.homelab.io"
-  export GRAFANA_URL="https://grafana.homelab.io"
+  #export CONSUL_HTTP_ADDR=""
   ;;
 *)
   echo "Unrecognized input: '${env}'. Input must be 'minikube' or 'homelab'!"
@@ -128,6 +123,6 @@ case "$env" in
   ;;
 esac
 
-export CONSUL_LEASE_FILE="$(dirname $0)/../envs/${env}/.config/vault_consul_lease_id"
-export CONSUL_TOKEN_FILE="$(dirname $0)/../envs/${env}/.config/consul_token"
+#export CONSUL_LEASE_FILE="$(dirname $0)/../envs/${env}/.config/vault_consul_lease_id"
+#export CONSUL_TOKEN_FILE="$(dirname $0)/../envs/${env}/.config/consul_token"
 export VAULT_TOKEN_FILE="$(dirname $0)/../envs/${env}/.config/vault_token"
