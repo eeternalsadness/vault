@@ -103,6 +103,6 @@ vault read database/creds/dynamic-role
 
 ## Examples
 
-- [Database connection](/envs/dev/secrets/database/mongodb-dev/mongodb-dev.yaml)
-- [Static role](/envs/dev/secrets/database/mongodb-dev/roles/examples/static-role.yaml)
-- [Dynamic role](/envs/dev/secrets/database/mongodb-dev/roles/examples/dynamic-role.yaml)
+- [Database connection](/examples/secrets/database/mongodb-dev/mongodb-dev.yaml)
+- [Static role](/examples/secrets/database/mongodb-dev/roles/examples/static-role.yaml)
+- [Dynamic role](/examples/secrets/database/mongodb-dev/roles/examples/dynamic-role.yaml)

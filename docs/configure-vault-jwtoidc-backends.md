@@ -63,5 +63,10 @@ path "test/*" {
 
 **OIDC**:
 
-- [Auth backend](/envs/minikube/auth/jwt/oidc-google/oidc-google.yaml)
-- [Role config](/envs/minikube/auth/jwt/oidc-google/roles/terraform-vault.yaml)
+- [Auth backend](/examples/auth/jwt/oidc-google/oidc-google.yaml)
+- [Role config](/examples/auth/jwt/oidc-google/roles/terraform-vault.yaml)
+
+**JWT**:
+
+- [Auth backend](/examples/auth/jwt/jwt-gitlab/jwt-gitlab.yaml)
+- [Role config](/examples/auth/jwt/jwt-gitlab/roles/gitlab-sandbox.yaml)
