@@ -9,7 +9,7 @@ import sys
 def generate_secret(length=16, symbols=True):
     chars = string.ascii_letters + string.digits
     if symbols:
-        chars += "!@#$%^&*-_=+;:,./?"
+        chars += "!@#$%^*-_=+;:,./?"
     return "".join(secrets.choice(chars) for _ in range(length))
 
 
