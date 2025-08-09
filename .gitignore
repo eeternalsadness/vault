@@ -37,3 +37,8 @@ override.tf.json
 terraform.rc
 
 .terraform.lock.hcl
+
+# local vault & consul creds used in scripts
+vault_token
+vault_consul_lease_id
+consul_token
