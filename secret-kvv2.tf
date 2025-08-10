@@ -1,11 +1,9 @@
 locals {
   # Helper locals for paths and file operations
   kv_secrets_path = "${path.module}/${var.repo-path-secret-kv}"
-  kv_imports_path = "${local.kv_secrets_path}/imports"
-  
+
   # File discovery
-  kv_secret_files = fileset(local.kv_secrets_path, "*.yaml")
-  kv_import_files = fileset(local.kv_imports_path, "*.yaml")
+  kv_secret_files = fileset(local.kv_secrets_path, "**/*.yaml")
 
   # Parse YAML configurations
   kv_configs = {
@@ -14,30 +12,27 @@ locals {
     => yamldecode(file("${local.kv_secrets_path}/${file_name}"))
   }
 
-  # Parse import configurations
-  kv_imports = merge([
-    for file_name in local.kv_import_files : {
-      for secret_path in yamldecode(file("${local.kv_imports_path}/${file_name}")) :
-      secret_path => {
-        path            = secret_path
-        path_with_mount = format("%s/data/%s", vault_mount.kvv2.path, secret_path)
-      }
-    }
-  ]...)
-
-  # All secret paths (both configured and imported)
-  all_secret_paths = concat(keys(local.kv_configs), keys(local.kv_imports))
-
   # Helper functions for config properties
   has_timestamp = { for k, v in local.kv_configs : k => contains(keys(v.metadata), "timestamp") }
-  has_rotation = { for k, v in local.kv_configs : k => contains(keys(v.spec), "rotateInterval") }
+  has_rotation  = { for k, v in local.kv_configs : k => contains(keys(v.spec), "rotateInterval") }
   has_generated = { for k, v in local.kv_configs : k => contains(keys(v.spec), "generated") }
-  has_public = { for k, v in local.kv_configs : k => contains(keys(v.spec), "public") }
+  has_public    = { for k, v in local.kv_configs : k => contains(keys(v.spec), "public") }
+  #has_private   = { for k, v in local.kv_configs : k => contains(keys(v.spec), "private") }
+  has_import = { for k, v in local.kv_configs : k => contains(keys(v.spec), "import") }
+
+  # Parse import configurations
+  kv_imports = [
+    for k, v in local.kv_configs : k
+    if local.has_import[k] && local.has_import[k] ? v.spec.import : false
+  ]
+
+  # All secret paths (both configured and imported)
+  all_secret_paths = concat(keys(local.kv_configs), local.kv_imports)
 
   # Secrets that need data fetching (have timestamps or are imported)
   secrets_needing_data = concat(
     [for k, v in local.kv_configs : k if local.has_timestamp[k]],
-    keys(local.kv_imports)
+    local.kv_imports
   )
 
   # Rotation logic - secrets that need rotation based on timestamp + interval
@@ -98,11 +93,11 @@ resource "vault_mount" "kvv2" {
   path        = var.vault-path-secret-kv-v2
   type        = "kv"
   description = "KV version 2 secret engine mount"
-  
+
   options = {
     version = "2"
   }
-  
+
   seal_wrap                 = true
   default_lease_ttl_seconds = var.kvv2-lease-ttl-seconds
   max_lease_ttl_seconds     = var.kvv2-lease-ttl-seconds
@@ -124,7 +119,7 @@ data "vault_kv_secret_v2" "kvv2" {
   for_each = toset(local.secrets_needing_data)
 
   mount = vault_mount.kvv2.path
-  name  = contains(keys(local.kv_configs), each.key) ? local.kv_configs[each.key].metadata.path : local.kv_imports[each.key].path
+  name  = each.key
 }
 
 # Generate secrets for rotation/new secrets
@@ -143,11 +138,11 @@ resource "vault_kv_secret_v2" "kvv2" {
   for_each = toset(local.all_secret_paths)
 
   mount = vault_mount.kvv2.path
-  name  = contains(keys(local.kv_configs), each.value) ? local.kv_configs[each.value].metadata.path : local.kv_imports[each.value].path
-  
+  name  = each.key
+
   # Use existing data for imports and secrets not needing rotation, otherwise use generated
   data_json = contains(local.secrets_needing_data, each.key) && !contains(keys(local.secrets_for_rotation), each.key) ? data.vault_kv_secret_v2.kvv2[each.value].data_json : jsonencode(local.combined_secrets[each.value])
-  
+
   # WARN: delete all versions of secret if the config is deleted
   delete_all_versions = true
 
@@ -190,6 +185,6 @@ resource "null_resource" "kvv2_update_timestamp" {
 import {
   for_each = local.kv_imports
 
-  id = each.value.path_with_mount
-  to = vault_kv_secret_v2.kvv2[each.key]
+  id = "${vault_mount.kvv2.path}/data/${each.value}"
+  to = vault_kv_secret_v2.kvv2[each.value]
 }
