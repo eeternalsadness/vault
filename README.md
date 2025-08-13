@@ -13,6 +13,7 @@
 This repository provides a GitOps-driven, self-service HashiCorp Vault configuration management system built with Terraform. It enables teams to declaratively manage Vault resources through YAML configuration files, eliminating the need for manual Vault administration while maintaining security best practices.
 
 The system automatically provisions and manages:
+
 - **Secrets Management**: KV v2 secrets with automatic generation, rotation, and lifecycle management
 - **Authentication**: JWT/OIDC backends with role-based access control
 - **Authorization**: Dynamic policy management from HCL files
@@ -24,6 +25,7 @@ All configurations are version-controlled and applied through Terraform, providi
 ## Features
 
 ### 🔐 **Secrets Management (KV v2)**
+
 - **Declarative Configuration**: Define secrets in YAML with public and generated values
 - **Automatic Generation**: Generate secure passwords and tokens with customizable complexity
 - **Time-based Rotation**: Automatic secret rotation based on configurable intervals
@@ -32,22 +34,26 @@ All configurations are version-controlled and applied through Terraform, providi
 - **Version Control**: Built-in versioning with configurable retention policies
 
 ### 🔑 **Authentication & Authorization**
+
 - **JWT/OIDC Integration**: Google OAuth, GitLab CI/CD, and custom OIDC providers
 - **Role-based Access**: Fine-grained role definitions with bound claims and policies
 - **Dynamic Policies**: HCL policy files automatically deployed and managed
 - **Multi-environment**: Separate configurations for different environments
 
 ### 🗄️ **Database Secrets Engine**
+
 - **Dynamic Credentials**: On-demand database user creation with automatic cleanup
 - **Static Role Rotation**: Periodic rotation of existing database user passwords
 - **MongoDB Support**: Native MongoDB connection and role management
 - **Credential Templates**: Customizable username patterns and permissions
 
 ### 🌐 **Service Integration**
+
 - **Consul Integration**: Automatic Consul token generation and policy binding
 - **Multi-backend Support**: Local and Consul Terraform backends
 
 ### 🛠️ **Operational Features**
+
 - **GitOps Workflow**: All changes tracked in Git with review processes
 - **Automated OIDC Login**: Built-in scripts for seamless authentication
 
@@ -116,3 +122,4 @@ See [Configure Vault](/docs/configure-vault.md).
 - [x] Decide whether or not to deprecate kvv1 secrets in favor of kvv2
 - [ ] Implement [lease duration](https://developer.hashicorp.com/vault/docs/secrets/kv/kv-v1#ttls) for kv secrets
 - [ ] Implement audit logs
+- [ ] Implement kubernetes auth
