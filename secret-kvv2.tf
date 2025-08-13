@@ -153,7 +153,7 @@ resource "vault_kv_secret_v2" "kvv2" {
   name  = each.key
 
   # Use existing data for imports and secrets not needing rotation, otherwise use generated
-  data_json = contains(local.secrets_needing_data, each.key) && !contains(keys(local.secrets_for_rotation), each.key) ? data.vault_kv_secret_v2.kvv2[each.key].data_json : jsonencode(local.combined_secrets[each.key])
+  data_json = contains(local.secrets_needing_data, each.key) && !contains(keys(local.secrets_for_rotation), each.key) ? data.vault_kv_secret_v2.kvv2[each.key].data_json : try(jsonencode(local.combined_secrets[each.key]), "{}")
 
   # WARN: delete all versions of secret if the config is deleted
   delete_all_versions = true
