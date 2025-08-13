@@ -189,7 +189,7 @@ resource "null_resource" "kvv2_update_timestamp" {
 }
 
 # Output secrets that need to be rotated (both automatically and manually)
-output "secrets_for_rotation" {
+output "kvv2_secrets_for_rotation" {
   description = "Secrets that need to be rotated (both automatically and manually)"
   value       = keys(local.secrets_for_rotation)
 }
