@@ -17,17 +17,14 @@ locals {
   has_rotation  = { for k, v in local.kv_configs : k => contains(keys(v.spec), "rotateInterval") }
   has_generated = { for k, v in local.kv_configs : k => contains(keys(v.spec), "generated") }
   has_public    = { for k, v in local.kv_configs : k => contains(keys(v.spec), "public") }
-  #has_private   = { for k, v in local.kv_configs : k => contains(keys(v.spec), "private") }
-  has_import = { for k, v in local.kv_configs : k => contains(keys(v.spec), "import") }
+  has_private   = { for k, v in local.kv_configs : k => contains(keys(v.spec), "private") }
+  has_import    = { for k, v in local.kv_configs : k => contains(keys(v.spec), "import") }
 
   # Parse import configurations
   kv_imports = [
     for k, v in local.kv_configs : k
     if local.has_import[k] && local.has_import[k] ? v.spec.import : false
   ]
-
-  # All secret paths (both configured and imported)
-  all_secret_paths = concat(keys(local.kv_configs), local.kv_imports)
 
   # Secrets that need data fetching (have timestamps or are imported)
   secrets_needing_data = concat(
@@ -52,6 +49,20 @@ locals {
   public_secrets = {
     for k, v in local.kv_configs : k => v.spec.public
     if local.has_public[k]
+  }
+
+  # Private secrets 
+  private_secrets = {
+    for k, v in local.kv_configs : k =>
+    {
+      # if there's a timestamp or if it's imported, fetch secret values from vault, otherwise generate stubs
+      for private_secret in v.spec.private :
+      private_secret =>
+      local.has_timestamp[k] || local.has_import[k] ?
+      jsondecode(data.vault_kv_secret_v2.kvv2[k].data_json)[private_secret] :
+      "-"
+    }
+    if local.has_private[k]
   }
 
   # Generated secret keys that need creation
@@ -82,9 +93,10 @@ locals {
   combined_secrets = {
     for key in keys(local.kv_configs) : key => merge(
       try(local.public_secrets[key], {}),
-      try(local.generated_secrets[key], {})
+      try(local.generated_secrets[key], {}),
+      try(local.private_secrets[key], {})
     )
-    if local.has_public[key] || contains(keys(local.generated_secrets), key)
+    if local.has_public[key] || local.has_private[key] || contains(keys(local.generated_secrets), key)
   }
 }
 
@@ -135,25 +147,20 @@ data "external" "generate-secret-kvv2" {
 
 # KV Secrets
 resource "vault_kv_secret_v2" "kvv2" {
-  for_each = toset(local.all_secret_paths)
+  for_each = local.kv_configs
 
   mount = vault_mount.kvv2.path
   name  = each.key
 
   # Use existing data for imports and secrets not needing rotation, otherwise use generated
-  data_json = contains(local.secrets_needing_data, each.key) && !contains(keys(local.secrets_for_rotation), each.key) ? data.vault_kv_secret_v2.kvv2[each.value].data_json : jsonencode(local.combined_secrets[each.value])
+  data_json = contains(local.secrets_needing_data, each.key) && !contains(keys(local.secrets_for_rotation), each.key) ? data.vault_kv_secret_v2.kvv2[each.key].data_json : jsonencode(local.combined_secrets[each.key])
 
   # WARN: delete all versions of secret if the config is deleted
   delete_all_versions = true
 
-  # Custom metadata for configured secrets (not imports)
-  dynamic "custom_metadata" {
-    for_each = contains(keys(local.kv_configs), each.value) ? ["configured"] : []
-
-    content {
-      max_versions         = try(local.kv_configs[each.value].spec.maxVersions, null)
-      delete_version_after = try(local.kv_configs[each.value].spec.deleteVersionAfterSeconds, null)
-    }
+  custom_metadata {
+    max_versions         = try(local.kv_configs[each.key].spec.maxVersions, null)
+    delete_version_after = try(local.kv_configs[each.key].spec.deleteVersionAfterSeconds, null)
   }
 
   depends_on = [vault_policy.policy]
