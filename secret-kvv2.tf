@@ -188,6 +188,12 @@ resource "null_resource" "kvv2_update_timestamp" {
   depends_on = [vault_kv_secret_v2.kvv2]
 }
 
+# Output secrets that need to be rotated (both automatically and manually)
+output "secrets_for_rotation" {
+  description = "Secrets that need to be rotated (both automatically and manually)"
+  value       = keys(local.secrets_for_rotation)
+}
+
 # Import existing secrets
 import {
   for_each = local.kv_imports
