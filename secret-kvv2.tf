@@ -8,7 +8,7 @@ locals {
   # Parse YAML configurations
   kv_configs = {
     for file_name in local.kv_secret_files :
-    yamldecode(file("${local.kv_secrets_path}/${file_name}")).metadata.path
+    trimsuffix(file_name, ".yaml")
     => yamldecode(file("${local.kv_secrets_path}/${file_name}"))
   }
 
@@ -168,21 +168,18 @@ resource "vault_kv_secret_v2" "kvv2" {
 
 # Update timestamps after secret creation/update
 resource "null_resource" "kvv2_update_timestamp" {
-  for_each = {
-    for file_name in local.kv_secret_files :
-    file_name => yamldecode(file("${local.kv_secrets_path}/${file_name}"))
-  }
+  for_each = local.kv_configs
 
   provisioner "local-exec" {
     command = "python3 scripts/update-timestamp.py $file_path $timestamp"
     environment = {
-      file_path = format("%s/%s", local.kv_secrets_path, each.key)
-      timestamp = vault_kv_secret_v2.kvv2[each.value.metadata.path].metadata.created_time
+      file_path = format("%s/%s", local.kv_secrets_path, "${each.key}.yaml")
+      timestamp = vault_kv_secret_v2.kvv2[each.key].metadata.created_time
     }
   }
 
   triggers = {
-    secret_updated = vault_kv_secret_v2.kvv2[each.value.metadata.path].data_json
+    secret_updated = vault_kv_secret_v2.kvv2[each.key].data_json
   }
 
   depends_on = [vault_kv_secret_v2.kvv2]
