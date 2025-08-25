@@ -1,17 +1,20 @@
 locals {
-  secret-database-map = try({
-    for file_name in fileset("${path.module}/${var.repo-path-secret-database}", "*/*.yaml") :
-    yamldecode(file("${path.module}/${var.repo-path-secret-database}/${file_name}")).metadata.name
-    => yamldecode(file("${path.module}/${var.repo-path-secret-database}/${file_name}"))
-  }, {})
+  database_secrets_path = "${path.module}/${var.repo-path-secret-database}"
 
-  secret-database-roles = merge([
-    for connection in keys(local.secret-database-map) : {
-      for file_name in fileset("${path.module}/${var.repo-path-secret-database}/${connection}/roles", "*.yaml") :
-      format("%s/%s", connection, yamldecode(file("${path.module}/${var.repo-path-secret-database}/${connection}/roles/${file_name}")).metadata.name)
+  secret_database_map = {
+    for file_name in fileset(local.database_secrets_path, "*/*.{yaml,yml}") :
+    yamldecode(file("${local.database_secrets_path}/${file_name}")).metadata.name
+    => yamldecode(file("${local.database_secrets_path}/${file_name}"))
+    if can(yamldecode(file("${local.database_secrets_path}/${file_name}")))
+  }
+
+  secret_database_roles = merge([
+    for connection in keys(local.secret_database_map) : {
+      for file_name in fileset("${local.database_secrets_path}/${connection}/roles", "*.{yaml,yml}") :
+      format("%s/%s", connection, yamldecode(file("${local.database_secrets_path}/${connection}/roles/${file_name}")).metadata.name)
       => {
         connection  = connection
-        role_config = yamldecode(file("${path.module}/${var.repo-path-secret-database}/${connection}/roles/${file_name}"))
+        role_config = yamldecode(file("${local.database_secrets_path}/${connection}/roles/${file_name}"))
       }
     }
   ]...)
@@ -25,18 +28,18 @@ resource "vault_database_secrets_mount" "database" {
   max_lease_ttl_seconds     = var.database-max-lease-ttl-seconds
 
   lifecycle {
-    ignore_changes = [mongodb]
+    ignore_changes = [mongodb, mssql, redis, elasticsearch]
   }
 
   depends_on = [vault_policy.policy]
 }
 
 resource "vault_database_secret_backend_connection" "database" {
-  for_each = local.secret-database-map
+  for_each = local.secret_database_map
 
   backend                  = vault_database_secrets_mount.database.path
   name                     = each.value.metadata.name
-  allowed_roles            = [for role in local.secret-database-roles : role.role_config.metadata.name if role.connection == each.value.metadata.name]
+  allowed_roles            = [for role in local.secret_database_roles : role.role_config.metadata.name if role.connection == each.value.metadata.name]
   root_rotation_statements = try(each.value.spec.rootRotationStatements, null)
   verify_connection        = true
 
@@ -52,11 +55,50 @@ resource "vault_database_secret_backend_connection" "database" {
     }
   }
 
+  dynamic "mssql" {
+    for_each = each.value.spec.type == "mssql" ? ["mssql"] : []
+
+    content {
+      connection_url       = each.value.spec.mssql.connectionUrl
+      username             = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).username
+      password             = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).password
+      max_open_connections = try(each.value.spec.mssql.maxOpenConnections, null)
+      max_idle_connections = try(each.value.spec.mssql.maxIdleConnections, null)
+      username_template    = try(each.value.spec.mssql.usernameTemplate, null)
+    }
+  }
+
+  dynamic "redis" {
+    for_each = each.value.spec.type == "redis" ? ["redis"] : []
+
+    content {
+      host         = each.value.spec.redis.host
+      port         = each.value.spec.redis.port
+      username     = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).username
+      password     = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).password
+      tls          = try(each.value.spec.redis.tls, null)
+      insecure_tls = try(each.value.spec.redis.insecureTls, null)
+    }
+  }
+
+  dynamic "elasticsearch" {
+    for_each = each.value.spec.type == "elasticsearch" ? ["elasticsearch"] : []
+
+    content {
+      url               = each.value.spec.elasticsearch.url
+      username          = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).username
+      password          = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).password
+      tls_server_name   = try(each.value.spec.elasticsearch.tlsServerName)
+      insecure          = try(each.value.spec.elasticsearch.insecure)
+      username_template = try(each.value.spec.elasticsearch.usernameTemplate)
+    }
+  }
+
   depends_on = [vault_policy.policy]
 }
 
 resource "vault_database_secret_backend_static_role" "database" {
-  for_each = { for k, v in local.secret-database-roles : k => v if v.role_config.spec.type == "static" }
+  for_each = { for k, v in local.secret_database_roles : k => v if v.role_config.spec.type == "static" }
 
   backend  = vault_database_secrets_mount.database.path
   name     = each.value.role_config.metadata.name
@@ -72,7 +114,7 @@ resource "vault_database_secret_backend_static_role" "database" {
 }
 
 resource "vault_database_secret_backend_role" "database" {
-  for_each = { for k, v in local.secret-database-roles : k => v if v.role_config.spec.type == "dynamic" }
+  for_each = { for k, v in local.secret_database_roles : k => v if v.role_config.spec.type == "dynamic" }
 
   backend             = vault_database_secrets_mount.database.path
   name                = each.value.role_config.metadata.name
