@@ -1,0 +1,16 @@
+metadata:
+  name: homelab
+  description: "Kubernetes auth backend for homelab cluster"
+spec:
+  # API server endpoint
+  kubernetesHost: "https://192.168.0.70:6443"
+  # path to kubernetes API server's CA cert in vault (without the mount path)
+  kubernetesCaCertSecretPath: kubernetes/homelab/ca-cert
+  # path to kubernetes token reviewer JWT in vault (without the mount path)
+  #kubernetesTokenReviewerSecretPath: ""
+  # JWT issuer
+  #issuer: ""
+  # mount path for the auth backend
+  mountPath: kubernetes-homelab
+  defaultLeaseTtl: "5m"
+  maxLeaseTtl: "1h"

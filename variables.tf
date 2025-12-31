@@ -50,6 +50,12 @@ variable "repo-path-auth-jwt" {
   default     = "envs/minikube/auth/jwt"
 }
 
+variable "repo-path-auth-kubernetes" {
+  description = "The path in the repo where kubernetes auth backends are configured"
+  type        = string
+  default     = "envs/minikube/auth/kubernetes"
+}
+
 ###################################
 # VAULT PATHS
 ###################################
