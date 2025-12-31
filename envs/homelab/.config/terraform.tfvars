@@ -1,0 +1,4 @@
+repo-path-policy          = "envs/homelab/policies"
+repo-path-secret-kv       = "envs/homelab/secrets/kv"
+repo-path-secret-database = "envs/homelab/secrets/database"
+repo-path-auth-jwt        = "envs/homelab/auth/jwt"
