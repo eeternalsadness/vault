@@ -12,7 +12,7 @@ spec:
   boundIssuer: "https://accounts.google.com"
   redirectUrls:
     - "http://localhost:8250/oidc/callback"
-    - "https://vault.homelab.io/ui/vault/auth/oidc-google/oidc/callback"
+    - "https://vault.homelab.eeternalsadness.dev/ui/vault/auth/oidc-google/oidc/callback"
   defaultLeaseTtl: "4h"
   maxLeaseTtl: "12h"
   enableOnWebUi: true

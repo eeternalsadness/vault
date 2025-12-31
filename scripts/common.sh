@@ -114,7 +114,7 @@ case "$env" in
   #export CONSUL_HTTP_ADDR=""
   ;;
 "homelab")
-  export VAULT_ADDR="https://vault.homelab.io"
+  export VAULT_ADDR="https://vault.homelab.eeternalsadness.dev"
   #export CONSUL_HTTP_ADDR=""
   ;;
 *)
