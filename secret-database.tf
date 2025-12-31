@@ -28,7 +28,7 @@ resource "vault_database_secrets_mount" "database" {
   max_lease_ttl_seconds     = var.database-max-lease-ttl-seconds
 
   lifecycle {
-    ignore_changes = [mongodb, mssql, redis, elasticsearch]
+    ignore_changes = [mongodb, mssql, redis, elasticsearch, postgresql]
   }
 
   depends_on = [vault_policy.policy]
@@ -65,6 +65,20 @@ resource "vault_database_secret_backend_connection" "database" {
       max_open_connections = try(each.value.spec.mssql.maxOpenConnections, null)
       max_idle_connections = try(each.value.spec.mssql.maxIdleConnections, null)
       username_template    = try(each.value.spec.mssql.usernameTemplate, null)
+    }
+  }
+
+  dynamic "postgresql" {
+    for_each = each.value.spec.type == "postgresql" ? ["postgresql"] : []
+
+    content {
+      connection_url          = each.value.spec.postgresql.connectionUrl
+      username                = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).username
+      password                = jsondecode(vault_kv_secret_v2.kvv2[each.value.spec.initialRootCredentialsKvPath].data_json).password
+      max_open_connections    = try(each.value.spec.postgresql.maxOpenConnections, null)
+      max_idle_connections    = try(each.value.spec.postgresql.maxIdleConnections, null)
+      username_template       = try(each.value.spec.postgresql.usernameTemplate, null)
+      password_authentication = "scram-sha-256"
     }
   }
 
