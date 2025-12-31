@@ -1,0 +1,11 @@
+metadata:
+  name: cert-manager
+spec:
+  tokenPolicies:
+    - default
+    - cert-manager
+  tokenTtlSeconds: 3600 # 1 hour
+  serviceAccountNames:
+    - cert-manager
+  serviceAccountNamespaces:
+    - cert-manager
