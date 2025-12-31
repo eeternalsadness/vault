@@ -6,6 +6,6 @@ spec:
     - cert-manager
   tokenTtlSeconds: 3600 # 1 hour
   serviceAccountNames:
-    - cert-manager
+    - external-secrets
   serviceAccountNamespaces:
-    - cert-manager
+    - external-secrets
