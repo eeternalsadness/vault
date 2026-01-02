@@ -1,0 +1,11 @@
+metadata:
+  name: grafana
+spec:
+  tokenPolicies:
+    - default
+    - grafana-read
+  tokenTtlSeconds: 3600 # 1 hour
+  serviceAccountNames:
+    - kube-prometheus-grafana
+  serviceAccountNamespaces:
+    - monitoring
