@@ -6,6 +6,6 @@ spec:
     - grafana-read
   tokenTtlSeconds: 3600 # 1 hour
   serviceAccountNames:
-    - kube-prometheus-grafana
+    - external-secrets
   serviceAccountNamespaces:
-    - monitoring
+    - external-secrets
