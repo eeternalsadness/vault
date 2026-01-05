@@ -10,7 +10,7 @@ locals {
 
   secret_database_roles = merge([
     for connection in keys(local.secret_database_map) : {
-      for file_name in fileset("${local.database_secrets_path}/${connection}/roles", "*.{yaml,yml}") :
+      for file_name in fileset("${local.database_secrets_path}/${connection}/roles", "**/*.{yaml,yml}") :
       format("%s/%s", connection, yamldecode(file("${local.database_secrets_path}/${connection}/roles/${file_name}")).metadata.name)
       => {
         connection  = connection
