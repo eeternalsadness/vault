@@ -3,6 +3,7 @@ metadata:
 spec:
   tokenPolicies:
     - default
+    - grafana-read
     - terraform-grafana
   tokenTtlSeconds: 14400 # 4 hours
   scopes:
