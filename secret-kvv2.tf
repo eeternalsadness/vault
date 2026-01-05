@@ -36,9 +36,9 @@ locals {
   secrets_for_rotation = {
     for k, v in local.kv_configs :
     k => v
-    if local.has_rotation[k] && timecmp(
+    if local.has_rotation[k] && local.has_timestamp[k] && timecmp(
       timeadd(
-        local.has_timestamp[k] ? v.metadata.timestamp : "2001-09-11T00:00:00+00:00",
+        try(v.metadata.timestamp, "2001-09-11T00:00:00+00:00"),
         try(v.spec.rotateInterval, "0s")
       ),
       plantimestamp()
