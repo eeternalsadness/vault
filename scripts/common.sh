@@ -97,6 +97,18 @@ function consul_get_token() {
   export CONSUL_HTTP_TOKEN="$consul_token"
 }
 
+function get_pg_creds() {
+  local pg_role=$1
+  local vault_pg_creds
+  vault_pg_creds=$(vault read "database/static-creds/${pg_role}" -format=json)
+
+  pg_user=$(jq -r '.data.username' <<<"$vault_pg_creds")
+  pg_password=$(jq -r '.data.password' <<<"$vault_pg_creds")
+
+  export PGUSER="$pg_user"
+  export PGPASSWORD="$pg_password"
+}
+
 echo "WARNING: make sure to run this inside the terraform root folder"
 
 # get config env
