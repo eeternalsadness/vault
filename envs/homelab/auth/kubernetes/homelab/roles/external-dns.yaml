@@ -1,0 +1,11 @@
+metadata:
+  name: external-dns
+spec:
+  tokenPolicies:
+    - default
+    - external-dns
+  tokenTtlSeconds: 3600 # 1 hour
+  serviceAccountNames:
+    - external-secrets
+  serviceAccountNamespaces:
+    - external-secrets
